@@ -166,7 +166,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                     selectedCategory: _selectedCategory,
                     onCategoryChanged: (category) {
                       setState(() => _selectedCategory = category);
-                      dataProvider.setSelectedCategory(category);
+                      dataProvider.setSelectedPasswordCategory(category);
                     },
                   ),
                 );
@@ -226,8 +226,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                             duration: Duration(milliseconds: 300 + (index * 30)),
                             opacity: 1.0,
                             curve: Curves.easeInOut,
-                            child: AnimatedPadding(
-                              duration: Duration(milliseconds: 300 + (index * 30)),
+                            child: Padding(
                               padding: const EdgeInsets.only(bottom: 12, left: 0, right: 0),
                               child: PasswordCard(
                                 password: password,
@@ -238,7 +237,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                             ),
                           );
                         },
-    );
+                      );
   },
 );
 

@@ -180,64 +180,94 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPage(OnboardingPage page) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Image from URL
-          Container(
-            width: 240,
-            height: 240,
+    return Stack(
+      children: [
+        // Full-screen background image
+        Positioned.fill(
+          child: Image.network(
+            page.imageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              color: ModernColors.primary.withOpacity(0.1),
+              child: const Center(child: Icon(Icons.image_not_supported, size: 64, color: ModernColors.primary)),
+            ),
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                color: ModernColors.primary.withOpacity(0.1),
+                child: Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  : null)),
+              );
+            },
+          ),
+        ),
+        
+        // Dark overlay for better text readability
+        Positioned.fill(
+          child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: NetworkImage(page.imageUrl),
-                fit: BoxFit.cover,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.1),
+                  Colors.black.withOpacity(0.7),
+                ],
               ),
             ),
           ),
-          
-          const SizedBox(height: 48),
-          
-          // Title
-          Text(
-            page.title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
-            ),
-            textAlign: TextAlign.center,
+        ),
+        
+        // Content overlay
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // Title
+              Text(
+                page.title,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  height: 1.3,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 12),
+              
+              // Subtitle
+              Text(
+                page.subtitle,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withOpacity(0.9),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Description
+              Text(
+                page.description,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white.withOpacity(0.8),
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 100), // Space for bottom controls
+            ],
           ),
-          
-          const SizedBox(height: 12),
-          
-          // Subtitle
-          Text(
-            page.subtitle,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: ModernColors.primary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Description
-          Text(
-            page.description,
-            style: TextStyle(
-              fontSize: 14,
-              color: ModernColors.textSecondary,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

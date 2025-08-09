@@ -4,6 +4,7 @@ import '../../../models/password_entry.dart';
 import '../../../providers/data_provider.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/helpers.dart';
+import '../../../services/encryption_service.dart';
 
 class EditPasswordScreen extends StatefulWidget {
   final PasswordEntry password;
@@ -69,11 +70,14 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
     try {
       final dataProvider = context.read<DataProvider>();
       
+      // Encrypt the password before updating
+      final encryptedPassword = EncryptionService.encrypt(_passwordController.text);
+      
       // Create updated password entry
       final updatedPassword = widget.password.copyWith(
         name: _nameController.text.trim(),
         username: _usernameController.text.trim(),
-        password: _passwordController.text, // This will be encrypted in updatePassword
+        password: encryptedPassword, // Use the encrypted password
         url: _urlController.text.trim(),
         notes: _notesController.text.trim(),
         category: _selectedCategory,

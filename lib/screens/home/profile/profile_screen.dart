@@ -4,7 +4,6 @@ import 'security_settings_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
 import 'about_screen.dart';
-import 'appearance_settings_screen.dart';
 
 // Modern Light Blue Color Scheme
 class ModernColors {

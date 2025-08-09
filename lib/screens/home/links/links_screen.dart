@@ -54,7 +54,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
     return Scaffold(
       backgroundColor: isDarkMode 
           ? const Color(0xFF0F172A) 
-          : colorScheme.background,
+          : colorScheme.surface,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           HapticFeedback.mediumImpact();
@@ -150,7 +150,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
               onPressed: () {
                 HapticFeedback.lightImpact();
                 context.read<DataProvider>().setSearchQuery('');
-                context.read<DataProvider>().setSelectedCategory('All');
+                context.read<DataProvider>().setSelectedLinkCategory('All');
                 context.read<DataProvider>().loadData();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -243,7 +243,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
            final links = dataProvider.links;
            print('Links screen: Building with ${links.length} filtered links');
            print('Links screen: Search query: "${dataProvider.searchQuery}"');
-           print('Links screen: Selected category: "${dataProvider.selectedCategory}"');
+           print('Links screen: Selected category: "${dataProvider.selectedLinkCategory}"');
            
            if (links.isEmpty) {
              return _buildEmptyState(context, isDarkMode);
@@ -275,7 +275,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
       decoration: BoxDecoration(
         color: isDarkMode 
             ? Colors.grey.shade800.withOpacity(0.3) 
-            : colorScheme.surfaceVariant.withOpacity(0.7),
+            : colorScheme.surfaceContainerHighest.withOpacity(0.7),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDarkMode 
@@ -320,7 +320,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
               foregroundColor: colorScheme.primary,
               backgroundColor: isDarkMode 
                   ? Colors.grey.shade800.withOpacity(0.3) 
-                  : colorScheme.surfaceVariant.withOpacity(0.3),
+                  : colorScheme.surfaceContainerHighest.withOpacity(0.3),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
@@ -387,7 +387,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
               onSelected: (selected) {
                 HapticFeedback.selectionClick();
                 setState(() => _selectedCategory = category);
-                dataProvider.setSelectedCategory(category);
+                dataProvider.setSelectedLinkCategory(category);
               },
               backgroundColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
               selectedColor: AppConstants.primaryColor,
@@ -700,7 +700,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
             Text(
               'No links yet',
               style: AppConstants.headlineMedium.copyWith(
-                color: isDarkMode ? Colors.white : colorScheme.onBackground,
+                color: isDarkMode ? Colors.white : colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -710,7 +710,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
               child: Text(
                 'Save and organize your important links here for easy access',
                 style: AppConstants.bodyMedium.copyWith(
-                  color: isDarkMode ? Colors.white70 : colorScheme.onBackground.withOpacity(0.7),
+                  color: isDarkMode ? Colors.white70 : colorScheme.onSurface.withOpacity(0.7),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -778,7 +778,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                   ),
                   prefixIcon: Icon(Icons.title_rounded, color: colorScheme.primary),
                   filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                 ),
               ),
               const SizedBox(height: 16),
@@ -797,7 +797,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                   ),
                   prefixIcon: Icon(Icons.description_rounded, color: colorScheme.primary),
                   filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                 ),
                 maxLines: 3,
               ),
@@ -817,7 +817,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                   ),
                   prefixIcon: Icon(Icons.link_rounded, color: colorScheme.primary),
                   filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                 ),
               ),
               const SizedBox(height: 16),
@@ -836,7 +836,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                   ),
                   prefixIcon: Icon(Icons.category_rounded, color: colorScheme.primary),
                   filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                 ),
                 dropdownColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
                 items: AppConstants.defaultLinkCategories.map((category) {
@@ -1257,7 +1257,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
            width: double.infinity,
            padding: const EdgeInsets.all(16),
            decoration: BoxDecoration(
-             color: isDarkMode ? const Color(0xFF2A3749) : colorScheme.surfaceVariant.withOpacity(0.5),
+             color: isDarkMode ? const Color(0xFF2A3749) : colorScheme.surfaceContainerHighest.withOpacity(0.5),
              borderRadius: BorderRadius.circular(16),
              border: Border.all(
                color: isDarkMode ? Colors.grey.shade700 : colorScheme.outline.withOpacity(0.3),
@@ -1371,7 +1371,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                    ),
                    prefixIcon: Icon(Icons.title_rounded, color: colorScheme.primary),
                    filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                  ),
                ),
                const SizedBox(height: 16),
@@ -1390,7 +1390,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                    ),
                    prefixIcon: Icon(Icons.description_rounded, color: colorScheme.primary),
                    filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                  ),
                  maxLines: 3,
                ),
@@ -1410,7 +1410,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                    ),
                    prefixIcon: Icon(Icons.link_rounded, color: colorScheme.primary),
                    filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                  ),
                ),
                const SizedBox(height: 16),
@@ -1429,7 +1429,7 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                    ),
                    prefixIcon: Icon(Icons.category_rounded, color: colorScheme.primary),
                    filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceVariant.withOpacity(0.3),
+                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
                  ),
                  dropdownColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
                  items: AppConstants.defaultLinkCategories.map((category) {

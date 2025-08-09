@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -12,6 +13,11 @@ class AuthService {
 
   // Check if device supports biometric authentication
   static Future<bool> isBiometricAvailable() async {
+    // Web platform doesn't support biometric authentication
+    if (kIsWeb) {
+      return false;
+    }
+    
     try {
       final bool canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
       final bool canAuthenticate = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
@@ -23,6 +29,11 @@ class AuthService {
 
   // Get available biometric types
   static Future<List<BiometricType>> getAvailableBiometrics() async {
+    // Web platform doesn't support biometric authentication
+    if (kIsWeb) {
+      return [];
+    }
+    
     try {
       return await _localAuth.getAvailableBiometrics();
     } on PlatformException catch (_) {
@@ -32,6 +43,11 @@ class AuthService {
 
   // Authenticate with biometrics
   static Future<bool> authenticateWithBiometrics(String reason) async {
+    // Web platform doesn't support biometric authentication
+    if (kIsWeb) {
+      return false;
+    }
+    
     try {
       return await _localAuth.authenticate(
         localizedReason: reason,

@@ -11,14 +11,16 @@ class DataProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String _searchQuery = '';
-  String _selectedCategory = 'All';
+  String _selectedPasswordCategory = 'All';
+  String _selectedLinkCategory = 'All';
 
   List<PasswordEntry> get passwords => _getFilteredPasswords();
   List<LinkEntry> get links => _getFilteredLinks();
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get searchQuery => _searchQuery;
-  String get selectedCategory => _selectedCategory;
+  String get selectedPasswordCategory => _selectedPasswordCategory;
+  String get selectedLinkCategory => _selectedLinkCategory;
 
   List<PasswordEntry> get favoritePasswords =>
       _passwords.where((p) => p.isFavorite).toList();
@@ -46,14 +48,35 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSelectedCategory(String category) {
-    _selectedCategory = category;
+  void setSelectedPasswordCategory(String category) {
+    _selectedPasswordCategory = category;
     notifyListeners();
+  }
+
+  void setSelectedLinkCategory(String category) {
+    _selectedLinkCategory = category;
+    notifyListeners();
+  }
+  
+  // For backward compatibility
+  void setSelectedCategory(String category) {
+    // Determine which category to update based on the current context
+    // This is a fallback method for existing code
+    if (passwordCategories.contains(category)) {
+      setSelectedPasswordCategory(category);
+    } else if (linkCategories.contains(category)) {
+      setSelectedLinkCategory(category);
+    } else if (category == 'All') {
+      // If 'All' is selected, update both categories
+      setSelectedPasswordCategory(category);
+      setSelectedLinkCategory(category);
+    }
   }
 
   void clearFilters() {
     _searchQuery = '';
-    _selectedCategory = 'All';
+    _selectedPasswordCategory = 'All';
+    _selectedLinkCategory = 'All';
     notifyListeners();
   }
 
@@ -64,9 +87,9 @@ class DataProvider extends ChangeNotifier {
     List<PasswordEntry> filtered = _passwords;
 
     // Filter by category
-    if (_selectedCategory != 'All') {
+    if (_selectedPasswordCategory != 'All') {
       filtered = filtered
-          .where((p) => p.category == _selectedCategory)
+          .where((p) => p.category == _selectedPasswordCategory)
           .toList();
     }
 
@@ -90,9 +113,9 @@ class DataProvider extends ChangeNotifier {
     List<LinkEntry> filtered = _links;
 
     // Filter by category
-    if (_selectedCategory != 'All') {
+    if (_selectedLinkCategory != 'All') {
       filtered = filtered
-          .where((l) => l.category == _selectedCategory)
+          .where((l) => l.category == _selectedLinkCategory)
           .toList();
     }
 
@@ -162,14 +185,13 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      // Create a new entry with encrypted password
-      final encryptedPassword = EncryptionService.encrypt(entry.password);
-      final updatedEntry = entry.copyWith(password: encryptedPassword);
-      
-      await StorageService.updatePassword(updatedEntry);
+      // The password in the entry should already be properly encrypted
+      // No need to decrypt and re-encrypt it
+      final box = Hive.box<PasswordEntry>('passwords');
       final index = _passwords.indexWhere((p) => p.id == entry.id);
       if (index != -1) {
-        _passwords[index] = updatedEntry;
+        await box.putAt(index, entry); // Update in Hive directly
+        _passwords[index] = entry; // Update local list
         notifyListeners();
       }
     } catch (e) {
@@ -258,10 +280,12 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      await StorageService.updateLink(entry);
+      // Update directly in Hive instead of using StorageService
+      final box = Hive.box<LinkEntry>('links');
       final index = _links.indexWhere((l) => l.id == entry.id);
       if (index != -1) {
-        _links[index] = entry;
+        await box.putAt(index, entry); // Update in Hive directly
+        _links[index] = entry; // Update local list
         notifyListeners();
       }
     } catch (e) {
@@ -299,8 +323,15 @@ class DataProvider extends ChangeNotifier {
   }
 
   Future<void> toggleLinkBookmark(LinkEntry entry) async {
+    final box = Hive.box<LinkEntry>('links');
+    final index = _links.indexWhere((e) => e.id == entry.id);
+    if (index == -1) return;
+
     final updatedEntry = entry.copyWith(isBookmarked: !entry.isBookmarked);
-    await updateLink(updatedEntry);
+    
+    await box.putAt(index, updatedEntry); // Update in Hive directly
+    _links[index] = updatedEntry; // Update local list
+    notifyListeners(); // Notify UI
   }
 
   // Data Export/Import
