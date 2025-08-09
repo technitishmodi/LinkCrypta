@@ -12,7 +12,7 @@ class AboutScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'About VaultMate',
+          'About LinkCrypta',
           style: TextStyle(
             color: Color(0xFF212121),
             fontSize: 20,
@@ -52,7 +52,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'VaultMate',
+                    'LinkCrypta',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class AboutScreen extends StatelessWidget {
             // About Section
             _buildSectionTitle('About'),
             _buildParagraph(
-              'VaultMate is a secure password manager designed to help you store and manage your passwords with ease. Our mission is to provide a simple, secure, and user-friendly solution for password management.'
+              'LinkCrypta is a secure password manager designed to help you store and manage your passwords with ease. Our mission is to provide a simple, secure, and user-friendly solution for password management.'
             ),
             
             _buildSectionTitle('Features'),
@@ -96,12 +96,12 @@ class AboutScreen extends StatelessWidget {
             
             _buildSectionTitle('Security'),
             _buildParagraph(
-              'VaultMate uses industry-standard AES-256 encryption to protect your data. Your master password and encryption keys never leave your device, ensuring that only you can access your passwords.'
+              'LinkCrypta uses industry-standard AES-256 encryption to protect your data. Your master password and encryption keys never leave your device, ensuring that only you can access your passwords.'
             ),
             
             _buildSectionTitle('Development Team'),
             _buildParagraph(
-              'VaultMate is developed by a team of security experts and software engineers dedicated to creating the most secure and user-friendly password manager available.'
+              'LinkCrypta is developed by a team of security experts and software engineers dedicated to creating the most secure and user-friendly password manager available.'
             ),
             
             // Developer Information
@@ -168,7 +168,7 @@ class AboutScreen extends StatelessWidget {
                         Row(
                           children: [
                             _buildSocialIcon(Icons.language, () => _launchUrl('https://johndoe.example.com')),
-                            _buildSocialIcon(Icons.email, () => _launchUrl('mailto:john@vaultmate.example.com')),
+                            _buildSocialIcon(Icons.email, () => _launchUrl('mailto:john@LinkCrypta.example.com')),
                             _buildSocialIcon(Icons.link, () => _launchUrl('https://github.com/johndoe')),
                           ],
                         ),
@@ -187,16 +187,16 @@ class AboutScreen extends StatelessWidget {
               context,
               icon: Icons.email_outlined,
               title: 'Email Support',
-              subtitle: 'support@vaultmate.example.com',
-              onTap: () => _launchUrl('mailto:support@vaultmate.example.com'),
+              subtitle: 'support@LinkCrypta.example.com',
+              onTap: () => _launchUrl('mailto:support@LinkCrypta.example.com'),
             ),
             
             _buildLinkButton(
               context,
               icon: Icons.language_rounded,
               title: 'Website',
-              subtitle: 'www.vaultmate.example.com',
-              onTap: () => _launchUrl('https://www.vaultmate.example.com'),
+              subtitle: 'www.LinkCrypta.example.com',
+              onTap: () => _launchUrl('https://www.LinkCrypta.example.com'),
             ),
             
             _buildLinkButton(
@@ -204,7 +204,7 @@ class AboutScreen extends StatelessWidget {
               icon: Icons.help_outline_rounded,
               title: 'Help Center',
               subtitle: 'View tutorials and FAQs',
-              onTap: () => _launchUrl('https://www.vaultmate.example.com/help'),
+              onTap: () => _launchUrl('https://www.LinkCrypta.example.com/help'),
             ),
             
             const SizedBox(height: 24),
@@ -236,7 +236,7 @@ class AboutScreen extends StatelessWidget {
             // Copyright
             Center(
               child: Text(
-                '© 2023 VaultMate. All rights reserved.',
+                '© 2023 LinkCrypta. All rights reserved.',
                 style: TextStyle(
                   fontSize: 14,
                   color: Color(0xFF757575),

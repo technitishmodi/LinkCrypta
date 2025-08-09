@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ],
                 ).createShader(bounds),
                 child: const Text(
-                  'VaultMate',
+                  'LinkCrypta',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

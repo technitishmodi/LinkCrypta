@@ -86,12 +86,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
             
             _buildSectionTitle('Introduction'),
             _buildParagraph(
-              'VaultMate is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our password manager application.'
+              'LinkCrypta is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our password manager application.'
             ),
             
             _buildSectionTitle('Information We Collect'),
             _buildParagraph(
-              'VaultMate is designed with privacy in mind. We collect minimal information necessary to provide our services:'
+              'LinkCrypta is designed with privacy in mind. We collect minimal information necessary to provide our services:'
             ),
             _buildBulletPoint('Authentication data for account verification'),
             _buildBulletPoint('App usage analytics (optional and anonymized)'),
@@ -116,7 +116,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             
             _buildSectionTitle('Third-Party Services'),
             _buildParagraph(
-              'VaultMate may use third-party services for analytics and crash reporting. These services may collect information sent by your device. Third-party services have their own privacy policies addressing how they use such information.'
+              'LinkCrypta may use third-party services for analytics and crash reporting. These services may collect information sent by your device. Third-party services have their own privacy policies addressing how they use such information.'
             ),
             
             _buildSectionTitle('Your Rights'),
@@ -138,7 +138,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'If you have any questions about this Privacy Policy, please contact us at:'
             ),
             _buildParagraph(
-              'support@vaultmate.example.com',
+              'support@LinkCrypta.example.com',
               isBold: true,
             ),
             

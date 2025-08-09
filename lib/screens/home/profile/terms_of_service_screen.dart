@@ -86,7 +86,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             
             _buildSectionTitle('Agreement to Terms'),
             _buildParagraph(
-              'By accessing or using VaultMate, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.'
+              'By accessing or using LinkCrypta, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.'
             ),
             
             _buildSectionTitle('Use License'),
@@ -95,33 +95,33 @@ class TermsOfServiceScreen extends StatelessWidget {
             ),
             _buildBulletPoint('Modify or copy the materials'),
             _buildBulletPoint('Use the materials for any commercial purpose'),
-            _buildBulletPoint('Attempt to decompile or reverse engineer any software contained in VaultMate'),
+            _buildBulletPoint('Attempt to decompile or reverse engineer any software contained in LinkCrypta'),
             _buildBulletPoint('Remove any copyright or other proprietary notations from the materials'),
             _buildBulletPoint('Transfer the materials to another person or "mirror" the materials on any other server'),
             
             _buildSectionTitle('Disclaimer'),
             _buildParagraph(
-              'The materials on VaultMate are provided on an "as is" basis. VaultMate makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.'
+              'The materials on LinkCrypta are provided on an "as is" basis. LinkCrypta makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.'
             ),
             
             _buildSectionTitle('Limitations'),
             _buildParagraph(
-              'In no event shall VaultMate or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use VaultMate, even if VaultMate or a VaultMate authorized representative has been notified orally or in writing of the possibility of such damage.'
+              'In no event shall LinkCrypta or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use LinkCrypta, even if LinkCrypta or a LinkCrypta authorized representative has been notified orally or in writing of the possibility of such damage.'
             ),
             
             _buildSectionTitle('Accuracy of Materials'),
             _buildParagraph(
-              'The materials appearing in VaultMate could include technical, typographical, or photographic errors. VaultMate does not warrant that any of the materials on its app are accurate, complete or current. VaultMate may make changes to the materials contained on its app at any time without notice.'
+              'The materials appearing in LinkCrypta could include technical, typographical, or photographic errors. LinkCrypta does not warrant that any of the materials on its app are accurate, complete or current. LinkCrypta may make changes to the materials contained on its app at any time without notice.'
             ),
             
             _buildSectionTitle('Links'),
             _buildParagraph(
-              'VaultMate has not reviewed all of the sites linked to its app and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by VaultMate of the site. Use of any such linked website is at the user\'s own risk.'
+              'LinkCrypta has not reviewed all of the sites linked to its app and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by LinkCrypta of the site. Use of any such linked website is at the user\'s own risk.'
             ),
             
             _buildSectionTitle('Modifications'),
             _buildParagraph(
-              'VaultMate may revise these terms of service for its app at any time without notice. By using this app you are agreeing to be bound by the then current version of these terms of service.'
+              'LinkCrypta may revise these terms of service for its app at any time without notice. By using this app you are agreeing to be bound by the then current version of these terms of service.'
             ),
             
             _buildSectionTitle('Governing Law'),
