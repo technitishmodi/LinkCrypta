@@ -4,6 +4,8 @@ import 'security_settings_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
 import 'about_screen.dart';
+import 'password_activity_screen.dart';
+import 'password_activity_json_screen.dart';
 
 // Modern Light Blue Color Scheme
 class ModernColors {
@@ -103,6 +105,34 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 12),
           
           // Settings Items
+          _buildSettingsItem(
+            context,
+            icon: Icons.history_rounded,
+            title: 'Password Activity',
+            subtitle: 'View your password usage history',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const PasswordActivityScreen(),
+                ),
+              );
+            },
+          ),
+          
+          _buildSettingsItem(
+            context,
+            icon: Icons.data_object_rounded,
+            title: 'Password Activity JSON',
+            subtitle: 'View activity logs in JSON format',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const PasswordActivityJsonAuthWrapper(),
+                ),
+              );
+            },
+          ),
+          
           _buildSettingsItem(
             context,
             icon: Icons.security_rounded,

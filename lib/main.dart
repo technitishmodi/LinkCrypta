@@ -7,6 +7,7 @@ import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/encryption_service.dart';
 import 'services/storage_service.dart';
+import 'services/activity_log_service.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -27,6 +28,7 @@ void main() async {
     // Initialize services
     await EncryptionService.initialize();
     await StorageService.initialize();
+    await ActivityLogService.initialize();
     
     runApp(const VaultMateApp());
   } catch (e) {

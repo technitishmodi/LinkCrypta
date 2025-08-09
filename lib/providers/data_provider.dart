@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../models/password_entry.dart';
 import '../models/link_entry.dart';
+import '../models/password_activity_log.dart';
 import '../services/storage_service.dart';
 import '../services/encryption_service.dart';
+import '../services/activity_log_service.dart';
 
 class DataProvider extends ChangeNotifier {
   List<PasswordEntry> _passwords = [];
@@ -172,6 +174,10 @@ class DataProvider extends ChangeNotifier {
         category: category,
       );
       _passwords.add(entry);
+      
+      // Log password creation
+      await ActivityLogService.logPasswordCreated(entry);
+      
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -190,8 +196,18 @@ class DataProvider extends ChangeNotifier {
       final box = Hive.box<PasswordEntry>('passwords');
       final index = _passwords.indexWhere((p) => p.id == entry.id);
       if (index != -1) {
+        // Get the old password for logging
+        final oldEntry = _passwords[index];
+        final oldEncryptedPassword = oldEntry.password;
+        
         await box.putAt(index, entry); // Update in Hive directly
         _passwords[index] = entry; // Update local list
+        
+        // Log password update if the password actually changed
+        if (oldEncryptedPassword != entry.password) {
+          await ActivityLogService.logPasswordUpdated(entry, oldEncryptedPassword);
+        }
+        
         notifyListeners();
       }
     } catch (e) {
@@ -206,6 +222,9 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
+      // Log password deletion before actually deleting it
+      await ActivityLogService.logPasswordDeleted(entry);
+      
       await StorageService.deletePassword(entry);
       _passwords.removeWhere((p) => p.id == entry.id);
       notifyListeners();
@@ -246,6 +265,9 @@ class DataProvider extends ChangeNotifier {
   }
 
   String getDecryptedPassword(PasswordEntry entry) {
+    // Log password view
+    ActivityLogService.logPasswordViewed(entry);
+    
     return StorageService.decryptPassword(entry.password);
   }
 
@@ -386,5 +408,32 @@ class DataProvider extends ChangeNotifier {
 
   void clearError() {
     _clearError();
+  }
+  
+  // Password Activity Logs
+  List<PasswordActivityLog> getAllPasswordLogs() {
+    return ActivityLogService.getAllLogs();
+  }
+  
+  List<PasswordActivityLog> getPasswordLogsForPassword(String passwordId) {
+    return ActivityLogService.getLogsForPassword(passwordId);
+  }
+  
+  List<PasswordActivityLog> getPasswordLogsByActivityType(ActivityType type) {
+    return ActivityLogService.getLogsByActivityType(type);
+  }
+  
+  List<PasswordActivityLog> getPasswordLogsInDateRange(DateTime start, DateTime end) {
+    return ActivityLogService.getLogsInDateRange(start, end);
+  }
+  
+  Future<void> clearAllPasswordLogs() async {
+    await ActivityLogService.clearAllLogs();
+    notifyListeners();
+  }
+  
+  Future<void> deleteOldPasswordLogs(DateTime cutoffDate) async {
+    await ActivityLogService.deleteOldLogs(cutoffDate);
+    notifyListeners();
   }
 }
