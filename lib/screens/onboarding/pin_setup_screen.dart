@@ -110,10 +110,9 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 // Header
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -324,8 +323,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                     child: const Text('Skip for now'),
                   ),
                 ),
-                ],
-              ),
+              ],
             ),
           ),
         ),

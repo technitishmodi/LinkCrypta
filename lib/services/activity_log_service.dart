@@ -2,7 +2,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/password_activity_log.dart';
 import '../models/password_entry.dart';
-import 'encryption_service.dart';
 
 class ActivityLogService {
   static const String _activityLogBoxName = 'password_activity_logs';

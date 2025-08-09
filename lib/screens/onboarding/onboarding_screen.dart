@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../services/onboarding_service.dart';
 import 'pin_setup_screen.dart';

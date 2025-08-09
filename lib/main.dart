@@ -1,4 +1,4 @@
-// Firebase imports removed
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -7,7 +7,6 @@ import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/encryption_service.dart';
 import 'services/storage_service.dart';
-import 'services/activity_log_service.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -19,6 +18,7 @@ import 'utils/constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   // Firebase initialization removed
   
   try {
@@ -28,7 +28,6 @@ void main() async {
     // Initialize services
     await EncryptionService.initialize();
     await StorageService.initialize();
-    await ActivityLogService.initialize();
     
     runApp(const VaultMateApp());
   } catch (e) {
