@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services") // ✅ Added back Google services plugin
+    // Google services plugin removed
 }
 
 android {
@@ -21,10 +21,11 @@ android {
 
     defaultConfig {
         applicationId = "com.example.flutter_application_1"
-        minSdk = 23 // ✅ Required for firebase_auth
+        minSdk = 23 // Minimum SDK version for app features
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
     }
 
     buildTypes {
@@ -39,12 +40,5 @@ flutter {
 }
 
 dependencies {
-    // ✅ Firebase BoM so you don’t have to specify versions individually
-    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
-
-    // ✅ Required for firebase_auth plugin
-    implementation("com.google.firebase:firebase-auth")
-
-    // Optional: Firebase Analytics
-    implementation("com.google.firebase:firebase-analytics")
+    // Firebase dependencies removed
 }

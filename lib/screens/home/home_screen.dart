@@ -6,6 +6,7 @@ import '../../utils/constants.dart';
 import 'passwords/passwords_screen.dart';
 import 'links/links_screen.dart';
 import 'favorites/favorites_screen.dart';
+import 'advanced_features_screen.dart';
 import 'profile/profile_screen.dart';
 import 'dart:ui';
 
@@ -36,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     const PasswordsScreen(),
     const LinksScreen(),
     const FavoritesScreen(),
+    const AdvancedFeaturesScreen(),
     const ProfileScreen(),
   ];
 
@@ -182,7 +184,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const SizedBox(width: 8),
                     _buildStatCard(
                       title: 'Favorites',
-                      value: dataProvider.passwords.where((p) => p.isFavorite).length.toString(),
+                      value: (dataProvider.passwords.where((p) => p.isFavorite).length +
+                              dataProvider.links.where((l) => l.isFavorite).length).toString(),
                       icon: Icons.favorite_border,
                       gradient: [_colors['accent']!, _colors['primary']!],
                     ),
@@ -335,7 +338,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 _buildNavItem(0, Icons.lock_outline, 'Passwords', isDarkMode),
                 _buildNavItem(1, Icons.link, 'Links', isDarkMode),
                 _buildNavItem(2, Icons.favorite_border, 'Favorites', isDarkMode),
-                _buildNavItem(3, Icons.person_outline, 'Profile', isDarkMode),
+                _buildNavItem(3, Icons.security, 'Advanced', isDarkMode),
+                _buildNavItem(4, Icons.person_outline, 'Profile', isDarkMode),
               ],
             ),
           ),

@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import '../../../providers/data_provider.dart';
 import '../../../models/password_activity_log.dart';
 import '../../../services/auth_service.dart';
@@ -12,33 +16,36 @@ class PasswordActivityJsonScreen extends StatefulWidget {
   const PasswordActivityJsonScreen({super.key});
 
   @override
-  State<PasswordActivityJsonScreen> createState() => _PasswordActivityJsonScreenState();
+  State<PasswordActivityJsonScreen> createState() =>
+      _PasswordActivityJsonScreenState();
 }
 
 // Authentication wrapper for the password activity JSON screen
 class PasswordActivityJsonAuthWrapper extends StatefulWidget {
   const PasswordActivityJsonAuthWrapper({super.key});
-  
+
   @override
-  State<PasswordActivityJsonAuthWrapper> createState() => _PasswordActivityJsonAuthWrapperState();
+  State<PasswordActivityJsonAuthWrapper> createState() =>
+      _PasswordActivityJsonAuthWrapperState();
 }
 
-class _PasswordActivityJsonAuthWrapperState extends State<PasswordActivityJsonAuthWrapper> {
+class _PasswordActivityJsonAuthWrapperState
+    extends State<PasswordActivityJsonAuthWrapper> {
   bool _isAuthenticating = true;
   bool _isAuthenticated = false;
-  
+
   @override
   void initState() {
     super.initState();
     _authenticate();
   }
-  
+
   Future<void> _authenticate() async {
     final bool authenticated = await AuthService.showAuthDialog(
       context,
       reason: 'Authentication required to view password activity logs',
     );
-    
+
     if (mounted) {
       setState(() {
         _isAuthenticating = false;
@@ -46,7 +53,7 @@ class _PasswordActivityJsonAuthWrapperState extends State<PasswordActivityJsonAu
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (_isAuthenticating) {
@@ -55,7 +62,7 @@ class _PasswordActivityJsonAuthWrapperState extends State<PasswordActivityJsonAu
         body: const Center(child: CircularProgressIndicator()),
       );
     }
-    
+
     if (!_isAuthenticated) {
       return Scaffold(
         appBar: AppBar(title: const Text('Password Activity JSON')),
@@ -65,9 +72,11 @@ class _PasswordActivityJsonAuthWrapperState extends State<PasswordActivityJsonAu
             children: [
               const Icon(Icons.lock, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              const Text('Authentication Failed', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Authentication Failed',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text('You need to authenticate to view password activity logs.'),
+              const Text(
+                  'You need to authenticate to view password activity logs.'),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
@@ -80,19 +89,20 @@ class _PasswordActivityJsonAuthWrapperState extends State<PasswordActivityJsonAu
         ),
       );
     }
-    
+
     return const PasswordActivityJsonScreen();
   }
 }
 
-class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen> with SingleTickerProviderStateMixin {
+class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String? _selectedPasswordId;
   ActivityType? _selectedActivityType;
   DateTime? _startDate;
   DateTime? _endDate;
   bool _prettyPrint = true;
-  
+
   @override
   void initState() {
     super.initState();
@@ -101,7 +111,7 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
     _endDate = DateTime.now();
     _startDate = _endDate!.subtract(const Duration(days: 30));
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -116,13 +126,21 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
         actions: [
           // Toggle between pretty print and compact JSON
           IconButton(
-            icon: Icon(_prettyPrint ? Icons.format_align_left : Icons.format_align_center),
+            icon: Icon(_prettyPrint
+                ? Icons.format_align_left
+                : Icons.format_align_center),
             tooltip: _prettyPrint ? 'Pretty Print' : 'Compact JSON',
             onPressed: () {
               setState(() {
                 _prettyPrint = !_prettyPrint;
               });
             },
+          ),
+          // Download JSON
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: "Download JSON",
+            onPressed: _downloadJsonToFile,
           ),
         ],
         bottom: TabBar(
@@ -164,9 +182,9 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.calendar_today),
-                    label: Text(_startDate != null 
-                      ? DateFormat('MMM d, yyyy').format(_startDate!) 
-                      : 'Start Date'),
+                    label: Text(_startDate != null
+                        ? DateFormat('MMM d, yyyy').format(_startDate!)
+                        : 'Start Date'),
                     onPressed: () => _selectDate(true),
                   ),
                 ),
@@ -174,16 +192,16 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.calendar_today),
-                    label: Text(_endDate != null 
-                      ? DateFormat('MMM d, yyyy').format(_endDate!) 
-                      : 'End Date'),
+                    label: Text(_endDate != null
+                        ? DateFormat('MMM d, yyyy').format(_endDate!)
+                        : 'End Date'),
                     onPressed: () => _selectDate(false),
                   ),
                 ),
               ],
             ),
           ),
-          
+
           // Activity logs list
           Expanded(
             child: TabBarView(
@@ -192,7 +210,7 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
                 _buildActivityLogsJson(null),
                 _buildActivityLogsJson(ActivityType.viewed),
                 _buildActivityLogsJson(ActivityType.created),
-                _buildActivityLogsJson(ActivityType.updated), // Shows both updated and deleted
+                _buildActivityLogsJson(ActivityType.updated),
               ],
             ),
           ),
@@ -205,12 +223,12 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
       ),
     );
   }
-  
+
   Widget _buildActivityLogsJson(ActivityType? activityType) {
     return Consumer<DataProvider>(
       builder: (context, dataProvider, child) {
         List<PasswordActivityLog> logs = [];
-        
+
         // Apply filters
         if (_selectedPasswordId != null) {
           logs = dataProvider.getPasswordLogsForPassword(_selectedPasswordId!);
@@ -221,58 +239,59 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
         } else {
           logs = dataProvider.getAllPasswordLogs();
         }
-        
-        // Apply activity type filter if on a specific tab
+
+        // Apply activity type filter
         if (activityType != null) {
           logs = logs.where((log) => log.activityType == activityType).toList();
         } else if (_selectedActivityType != null) {
           if (_selectedActivityType == ActivityType.updated) {
-            // For the "Modified" tab, show both updated and deleted
-            logs = logs.where((log) => 
-              log.activityType == ActivityType.updated || 
-              log.activityType == ActivityType.deleted
-            ).toList();
+            logs = logs
+                .where((log) =>
+                    log.activityType == ActivityType.updated ||
+                    log.activityType == ActivityType.deleted)
+                .toList();
           } else {
-            logs = logs.where((log) => log.activityType == _selectedActivityType).toList();
+            logs = logs
+                .where((log) => log.activityType == _selectedActivityType)
+                .toList();
           }
         }
-        
+
         if (logs.isEmpty) {
           return const Center(
             child: Text('No activity logs found'),
           );
         }
-        
-        // Convert logs to JSON with decrypted passwords
+
+        // Convert logs to JSON with decrypted values
         final List<Map<String, dynamic>> jsonLogs = logs.map((log) {
           final Map<String, dynamic> jsonLog = log.toJson();
-          
-          // Decrypt password values if they exist
+
           if (jsonLog['oldValue'] != null) {
             try {
-              jsonLog['oldValue'] = EncryptionService.decrypt(jsonLog['oldValue']);
+              jsonLog['oldValue'] =
+                  EncryptionService.decrypt(jsonLog['oldValue']);
             } catch (e) {
-              // If decryption fails, keep the encrypted value
               jsonLog['oldValue'] = "[Encrypted: ${jsonLog['oldValue']}]";
             }
           }
-          
+
           if (jsonLog['newValue'] != null) {
             try {
-              jsonLog['newValue'] = EncryptionService.decrypt(jsonLog['newValue']);
+              jsonLog['newValue'] =
+                  EncryptionService.decrypt(jsonLog['newValue']);
             } catch (e) {
-              // If decryption fails, keep the encrypted value
               jsonLog['newValue'] = "[Encrypted: ${jsonLog['newValue']}]";
             }
           }
-          
+
           return jsonLog;
         }).toList();
-        
-        final String jsonString = _prettyPrint 
-          ? const JsonEncoder.withIndent('  ').convert(jsonLogs)
-          : json.encode(jsonLogs);
-        
+
+        final String jsonString = _prettyPrint
+            ? const JsonEncoder.withIndent('  ').convert(jsonLogs)
+            : json.encode(jsonLogs);
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: SelectableText(
@@ -283,15 +302,16 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
       },
     );
   }
-  
+
   Future<void> _selectDate(bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: isStartDate ? _startDate ?? DateTime.now() : _endDate ?? DateTime.now(),
+      initialDate:
+          isStartDate ? _startDate ?? DateTime.now() : _endDate ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
-    
+
     if (picked != null) {
       setState(() {
         if (isStartDate) {
@@ -302,12 +322,26 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
       });
     }
   }
-  
+
   void _copyJsonToClipboard() async {
+    final String jsonString = await _generateFilteredJson();
+    await Clipboard.setData(ClipboardData(text: jsonString));
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('JSON copied to clipboard')),
+    );
+  }
+
+  Future<void> _downloadJsonToFile() async {
+    final String jsonString = await _generateFilteredJson();
+    await _saveJsonToFile(jsonString);
+  }
+
+  Future<String> _generateFilteredJson() async {
     final dataProvider = Provider.of<DataProvider>(context, listen: false);
     List<PasswordActivityLog> logs = [];
-    
-    // Apply filters
+
     if (_selectedPasswordId != null) {
       logs = dataProvider.getPasswordLogsForPassword(_selectedPasswordId!);
     } else if (_startDate != null && _endDate != null) {
@@ -317,68 +351,91 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
     } else {
       logs = dataProvider.getAllPasswordLogs();
     }
-    
-    // Apply activity type filter if on a specific tab
+
     if (_tabController.index > 0) {
       final tabActivityType = _getActivityTypeForTabIndex(_tabController.index);
       if (tabActivityType == ActivityType.updated) {
-        // For the "Modified" tab, show both updated and deleted
-        logs = logs.where((log) => 
-          log.activityType == ActivityType.updated || 
-          log.activityType == ActivityType.deleted
-        ).toList();
+        logs = logs
+            .where((log) =>
+                log.activityType == ActivityType.updated ||
+                log.activityType == ActivityType.deleted)
+            .toList();
       } else if (tabActivityType != null) {
         logs = logs.where((log) => log.activityType == tabActivityType).toList();
       }
     }
-    
-    // Convert logs to JSON with decrypted passwords
+
     final List<Map<String, dynamic>> jsonLogs = logs.map((log) {
       final Map<String, dynamic> jsonLog = log.toJson();
-      
-      // Decrypt password values if they exist
+
       if (jsonLog['oldValue'] != null) {
         try {
           jsonLog['oldValue'] = EncryptionService.decrypt(jsonLog['oldValue']);
         } catch (e) {
-          // If decryption fails, keep the encrypted value
           jsonLog['oldValue'] = "[Encrypted: ${jsonLog['oldValue']}]";
         }
       }
-      
+
       if (jsonLog['newValue'] != null) {
         try {
           jsonLog['newValue'] = EncryptionService.decrypt(jsonLog['newValue']);
         } catch (e) {
-          // If decryption fails, keep the encrypted value
           jsonLog['newValue'] = "[Encrypted: ${jsonLog['newValue']}]";
         }
       }
-      
+
       return jsonLog;
     }).toList();
-    
-    final String jsonString = _prettyPrint 
-      ? const JsonEncoder.withIndent('  ').convert(jsonLogs)
-      : json.encode(jsonLogs);
-    
-    // Copy to clipboard
-    await Clipboard.setData(ClipboardData(text: jsonString));
-    
-    // Show snackbar
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('JSON copied to clipboard')),
-    );
+
+    return _prettyPrint
+        ? const JsonEncoder.withIndent('  ').convert(jsonLogs)
+        : json.encode(jsonLogs);
   }
-  
+
+  Future<void> _saveJsonToFile(String jsonString) async {
+    try {
+      var status = await Permission.storage.request();
+      if (!status.isGranted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Storage permission denied")),
+        );
+        return;
+      }
+
+      Directory? directory;
+      if (Platform.isAndroid) {
+        directory = Directory("/storage/emulated/0/Download");
+      } else {
+        directory = await getApplicationDocumentsDirectory();
+      }
+
+      final path = "${directory.path}/password_logs.json";
+      final file = File(path);
+
+      await file.writeAsString(jsonString);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Saved to $path")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving file: $e")),
+      );
+    }
+  }
+
   ActivityType? _getActivityTypeForTabIndex(int index) {
     switch (index) {
-      case 0: return null; // All
-      case 1: return ActivityType.viewed;
-      case 2: return ActivityType.created;
-      case 3: return ActivityType.updated; // Modified tab
-      default: return null;
+      case 0:
+        return null;
+      case 1:
+        return ActivityType.viewed;
+      case 2:
+        return ActivityType.created;
+      case 3:
+        return ActivityType.updated;
+      default:
+        return null;
     }
   }
 }

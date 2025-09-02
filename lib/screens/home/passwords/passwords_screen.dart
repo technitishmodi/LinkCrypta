@@ -83,8 +83,8 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
       backgroundColor: ModernColors.background,
       appBar: AppBar(
         elevation: 0,
-        // backgroundColor: ModernColors.primary,
-        // foregroundColor: Colors.white,
+        backgroundColor: ModernColors.primary,
+        foregroundColor: Colors.white,
         title: const Text(
           'Passwords',
           style: TextStyle(
@@ -97,7 +97,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
           IconButton(
             icon: Icon(
               _showSearchBar ? Icons.close : Icons.search,
-              // color: Colors.white,
+              color: Colors.white,
             ),
             onPressed: () {
               setState(() {
@@ -110,7 +110,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, color: Colors.white),
             onPressed: _navigateToAddPassword,
           ),
         ],

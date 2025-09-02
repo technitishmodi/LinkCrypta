@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/onboarding_service.dart';
+import '../../widgets/animated_lock_widget.dart';
 import 'pin_setup_screen.dart';
 
 class ModernColors {
@@ -103,7 +104,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Future<void> _completeOnboarding() async {
-    // Push PIN setup screen first
+    await _navigateToPinSetup();
+  }
+
+  Future<void> _navigateToPinSetup() async {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const PinSetupScreen()),
     );
@@ -229,11 +233,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Widget _buildPage(OnboardingPage page) {
-    // build a layered page with background image + gradient overlay + content
     return Stack(
       fit: StackFit.expand,
       children: [
-        // background image
         Image.network(
           page.imageUrl,
           fit: BoxFit.cover,
@@ -258,12 +260,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+              child: const Center(
+                  child: CircularProgressIndicator(color: Colors.white)),
             );
           },
         ),
-
-        // gradient dark overlay
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -276,14 +277,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
         ),
-
-        // centered content (upper area)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             children: [
               const SizedBox(height: 70),
-              // animated lock icon
               Center(
                 child: AnimatedLockWidget(
                   size: 120,
@@ -294,7 +292,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
               ),
               const SizedBox(height: 26),
-              // title
               Text(
                 page.title,
                 textAlign: TextAlign.center,
@@ -306,7 +303,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
               ),
               const SizedBox(height: 8),
-              // subtitle
               Text(
                 page.subtitle,
                 textAlign: TextAlign.center,
@@ -317,7 +313,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
               ),
               const SizedBox(height: 14),
-              // description
               Flexible(
                 child: Text(
                   page.description,
@@ -340,7 +335,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // keep body full bleed
       body: Stack(
         children: [
           PageView.builder(
@@ -375,241 +369,4 @@ class OnboardingPage {
     required this.imageUrl,
     this.gradientColors = const [Color(0xFF4361EE), Color(0xFF3A0CA3)],
   });
-}
-
-/// AnimatedLockWidget
-/// - Draws a stylized lock using Containers and CustomPaint for the shackle.
-/// - Animates a small unlock motion on appear and a shimmer sweep.
-class AnimatedLockWidget extends StatefulWidget {
-  final double size;
-  final Color color;
-  final Color accent;
-
-  const AnimatedLockWidget({
-    super.key,
-    this.size = 100,
-    this.color = ModernColors.primary,
-    this.accent = ModernColors.secondary,
-  });
-
-  @override
-  State<AnimatedLockWidget> createState() => _AnimatedLockWidgetState();
-}
-
-class _AnimatedLockWidgetState extends State<AnimatedLockWidget>
-    with TickerProviderStateMixin {
-  late AnimationController _shimmerController;
-  late AnimationController _unlockController;
-  late Animation<double> _shimmerAnim;
-  late Animation<double> _unlockAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat();
-
-    _unlockController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-
-    // shimmer moves from -1 to 1 (used in shader transform)
-    _shimmerAnim =
-        Tween<double>(begin: -1.2, end: 1.2).animate(CurvedAnimation(
-      parent: _shimmerController,
-      curve: Curves.easeInOut,
-    ));
-
-    // unlock animation: 0 (locked) -> 1 (slightly open) -> 0
-    _unlockAnim = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
-      parent: _unlockController,
-      curve: Curves.elasticOut,
-    ));
-
-    // play a single unlock/lock motion after build to give life
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _unlockController.forward();
-      await Future.delayed(const Duration(milliseconds: 300));
-      await _unlockController.reverse();
-    });
-  }
-
-  @override
-  void dispose() {
-    _shimmerController.dispose();
-    _unlockController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final size = widget.size;
-    final bodyHeight = size * 0.62;
-    final shackleHeight = size * 0.38;
-    return SizedBox(
-      width: size,
-      height: size,
-      child: AnimatedBuilder(
-        animation: Listenable.merge([_shimmerController, _unlockController]),
-        builder: (context, child) {
-          final unlockValue = _unlockAnim.value;
-          final shimmerOffset = _shimmerAnim.value;
-
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              // lock body with gradient and shimmer overlay
-              Transform.translate(
-                offset: Offset(0, unlockValue * -2), // small lift during unlock
-                child: Container(
-                  width: size * 0.86,
-                  height: bodyHeight,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [widget.color, widget.accent],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.18),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // shimmer shader
-                      CustomPaint(
-                        painter: _ShimmerPainter(shimmerOffset, Colors.white.withOpacity(0.14)),
-                      ),
-                      // inner keyhole / plate
-                      Center(
-                        child: Container(
-                          width: size * 0.24,
-                          height: size * 0.24,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.14),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.fingerprint,
-                              color: Colors.white.withOpacity(0.9),
-                              size: size * 0.12,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // shackle (drawn via CustomPaint, rotated a bit during unlock)
-              Positioned(
-                top: 0,
-                child: Transform.translate(
-                  offset: Offset(0, -shackleHeight * 0.18 * unlockValue),
-                  child: Transform.rotate(
-                    angle: -0.12 * unlockValue, // slight rotation when unlocking
-                    child: CustomPaint(
-                      size: Size(size * 0.62, shackleHeight),
-                      painter: _ShacklePainter(
-                        color: Colors.white.withOpacity(0.95),
-                        strokeWidth: size * 0.08,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// Paints a smooth shackle (rounded U-shape)
-class _ShacklePainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-
-  _ShacklePainter({required this.color, required this.strokeWidth});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = strokeWidth
-      ..strokeJoin = StrokeJoin.round;
-
-    final double w = size.width;
-    final double h = size.height;
-
-    final path = Path();
-    path.moveTo(w * 0.12, h * 0.9);
-    path.arcToPoint(Offset(w * 0.88, h * 0.9),
-        radius: Radius.elliptical(w * 0.4, h * 0.9), clockwise: false);
-    // vertical stems
-    path.moveTo(w * 0.12, h * 0.9);
-    path.lineTo(w * 0.12, h * 0.45);
-    path.moveTo(w * 0.88, h * 0.9);
-    path.lineTo(w * 0.88, h * 0.45);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ShacklePainter oldDelegate) => false;
-}
-
-/// Simple shimmer painter: draws a diagonal translucent white band based on offset (-1 to 1)
-class _ShimmerPainter extends CustomPainter {
-  final double position; // -1..1
-  final Color color;
-
-  _ShimmerPainter(this.position, this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // convert position to actual x
-    final double width = size.width;
-    final double height = size.height;
-    final double centerX = (position + 1) / 2 * (width * 1.6) - (width * 0.3);
-
-    final rect = Rect.fromLTWH(centerX - width * 0.25, 0, width * 0.5, height);
-    final paint = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          color.withOpacity(0.0),
-          color.withOpacity(0.7),
-          color.withOpacity(0.0),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ).createShader(rect)
-      ..blendMode = BlendMode.lighten;
-
-    canvas.save();
-    // rotate slightly for diagonal shimmer
-    canvas.translate(0, 0);
-    canvas.rotate(-0.35);
-    canvas.drawRect(rect, paint);
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _ShimmerPainter oldDelegate) {
-    return oldDelegate.position != position || oldDelegate.color != color;
-  }
 }

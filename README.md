@@ -1,172 +1,280 @@
-# VaultMate - Secure Password Manager
+# VaultMate 🔐
 
-<p align="center">
-  <img src="assets/icons/google_logo.svg" alt="VaultMate Logo" width="100" height="100">
-</p>
+A secure, feature-rich password and link management application built with Flutter. VaultMate provides enterprise-grade security with an intuitive user interface, making password management effortless and secure.
 
-A secure password and link management app built with Flutter, featuring military-grade encryption and a modern, intuitive user interface.
+## ✨ Features
 
-## Features
+### 🔒 Core Security
+- **End-to-End Encryption**: All data encrypted using AES-256 encryption
+- **Biometric Authentication**: Fingerprint and face recognition support
+- **Secure Storage**: Local storage using Hive with encryption
+- **Master Password Protection**: Single master password for all your data
+- **Auto-lock**: Automatic app locking after inactivity
 
-### Security
-- **AES-256 Encryption**: All your passwords are encrypted using industry-standard AES-256 encryption
-- **Biometric Authentication**: Unlock your vault using fingerprint or face recognition (where available)
-- **PIN Protection**: Secure access with a custom PIN code
-- **Local Storage**: Your data never leaves your device unless you explicitly choose to back it up
+### 📊 Password Health Dashboard
+- **Password Strength Analysis**: Real-time strength scoring and recommendations
+- **Duplicate Detection**: Identify and manage duplicate passwords
+- **Compromised Password Checking**: Integration with HaveIBeenPwned API
+- **Security Insights**: Interactive charts and security metrics
+- **Health Score**: Overall password security rating
 
-### Password Management
-- **Secure Storage**: Store unlimited passwords with associated usernames, URLs, and notes
-- **Categories**: Organize passwords by custom categories
-- **Search & Filter**: Quickly find credentials with powerful search and filtering options
-- **Password Generator**: Create strong, unique passwords with customizable parameters
-- **Auto-Fill**: Copy passwords with a single tap for easy use
+### 🎲 Advanced Password Generator
+- **Multiple Generation Types**:
+  - Random passwords with customizable complexity
+  - Pronounceable passwords for easy memorization
+  - Passphrase generation with word combinations
+  - Custom pattern-based generation
+- **Real-time Strength Analysis**: Instant feedback on password strength
+- **Entropy Calculation**: Mathematical strength measurement
+- **Bulk Generation**: Generate multiple passwords at once
+- **Customizable Options**: Length, character sets, exclusions
 
-### Link Management
-- **Bookmark Storage**: Save and organize important links
-- **Quick Access**: Open saved links directly from the app
+### 🌐 Smart Auto-Fill & Browser Integration
+- **URL Matching**: Intelligent website matching with confidence scoring
+- **Form Field Detection**: Automatic categorization of login forms
+- **Auto-fill Suggestions**: Smart suggestions based on context
+- **Clipboard Integration**: Secure copy-paste functionality
+- **Subdomain Support**: Matches related domains automatically
 
-### User Experience
-- **Modern UI**: Clean, intuitive interface with smooth animations
-- **Dark Mode**: Choose between light and dark themes
-- **Customization**: Personalize your experience with theme colors and text scaling
-- **Favorites**: Mark frequently used credentials for quick access
+### 📈 Data Analytics & Insights
+- **Usage Patterns**: Track password usage and access patterns
+- **Security Trends**: Monitor security improvements over time
+- **Activity Timeline**: Detailed log of all password activities
+- **Password Distribution**: Visual breakdown of password strengths
+- **Breach Monitoring**: Alerts for compromised accounts
 
-## Getting Started
+### 🔗 Link Management
+- **Secure Link Storage**: Store and organize important links
+- **Category Organization**: Organize links by categories
+- **Quick Access**: Fast search and retrieval
+- **Encrypted Storage**: All links encrypted and secured
+
+### 🎨 User Experience
+- **Modern UI**: Beautiful, intuitive Material Design interface
+- **Dark/Light Themes**: Customizable appearance
+- **Smooth Animations**: Fluid transitions and interactions
+- **Search & Filter**: Powerful search across all stored data
+- **Export/Import**: Secure data backup and restore
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- Flutter SDK (^3.8.1)
-- Dart SDK (^3.8.1)
-- Android Studio / VS Code with Flutter extensions
-
-### Screenshots
-
-*Coming soon*
+- Flutter SDK (>=3.8.1)
+- Dart SDK
+- Android Studio / VS Code
+- Git
 
 ### Installation
 
-1. Clone the repository
-2. Install dependencies:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/vaultmate.git
+   cd vaultmate
+   ```
+
+2. **Install dependencies**
    ```bash
    flutter pub get
    ```
 
-3. Generate Hive adapters:
+3. **Generate model files**
    ```bash
-   dart run build_runner build
+   flutter packages pub run build_runner build
    ```
 
-4. Run the app:
+4. **Run the app**
    ```bash
    flutter run
    ```
 
-## Development
+### Platform Setup
 
-### Hot Reload
+#### Android
+- Minimum SDK: 21
+- Target SDK: 34
+- Permissions: Biometric, Internet (for breach checking)
 
-The app is configured for hot reload. After making changes to the code:
+#### iOS
+- iOS 12.0+
+- Biometric permissions configured
+- Network permissions for API calls
 
-1. Save the file
-2. Press `r` in the terminal to hot reload
-3. Press `R` to hot restart if needed
+#### Windows/Linux/macOS
+- Desktop support enabled
+- Local authentication configured
 
-### Architecture
+## 🏗️ Architecture
 
-VaultMate follows a provider-based architecture for state management:
-
+### Project Structure
 ```
 lib/
-|-- main.dart                 # App entry point
-|-- models/                   # Data models for passwords, links, and user information
-|   |-- password_entry.dart   # Password data structure
-|   |-- link_entry.dart       # Link data structure
-|   `-- user.dart             # User profile data
-|-- providers/                # State management using Provider package
-|   |-- data_provider.dart    # Manages password and link data
-|   `-- theme_provider.dart   # Handles theme and appearance settings
-|-- screens/                  # UI screens organized by feature
-|   |-- auth/                 # Authentication screens
-|   |-- home/                 # Main app screens (passwords, links, favorites, profile)
-|   |-- onboarding/           # First-time user experience
-|   `-- splash_screen.dart    # App loading screen
-|-- services/                 # Core functionality
-|   |-- auth_service.dart     # Authentication and biometrics
-|   |-- encryption_service.dart # AES-256 encryption implementation
-|   |-- onboarding_service.dart # First-time setup
-|   `-- storage_service.dart  # Local data persistence
-|-- utils/                    # Helper functions and constants
-|   |-- constants.dart        # App-wide constants
-|   `-- helpers.dart          # Utility functions
-`-- widgets/                  # Reusable UI components
-    |-- category_filter_widget.dart # Category filtering
-    |-- password_card.dart    # Password item display
-    `-- search_bar_widget.dart # Search functionality
+├── models/           # Data models (Hive entities)
+├── providers/        # State management (Provider pattern)
+├── screens/          # UI screens and pages
+│   ├── auth/        # Authentication screens
+│   ├── home/        # Main app screens
+│   └── onboarding/  # First-time user experience
+├── services/         # Business logic and APIs
+├── utils/           # Utilities and constants
+└── widgets/         # Reusable UI components
 ```
 
-## Troubleshooting
+### Key Services
+- **EncryptionService**: Handles all encryption/decryption
+- **StorageService**: Manages local data storage
+- **AuthService**: Authentication and biometrics
+- **PasswordHealthService**: Password analysis and security
+- **AdvancedPasswordGenerator**: Password generation algorithms
+- **SmartAutofillService**: Auto-fill functionality
+- **AnalyticsService**: Usage analytics and insights
+- **ActivityLogService**: Activity tracking and logging
+
+### State Management
+- **Provider Pattern**: Reactive state management
+- **DataProvider**: Main app state and data
+- **ThemeProvider**: Theme and appearance settings
+
+## 🔧 Configuration
+
+### Environment Setup
+Create a `.env` file in the root directory:
+```env
+HAVEIBEENPWNED_API_KEY=your_api_key_here
+ENCRYPTION_KEY=your_encryption_key
+```
+
+### Firebase Setup (Optional)
+For cloud backup and sync:
+1. Create a Firebase project
+2. Add your `google-services.json` (Android) and `GoogleService-Info.plist` (iOS)
+3. Enable Authentication and Firestore
+
+## 📱 Usage
+
+### First Time Setup
+1. **Welcome Screen**: Introduction to VaultMate features
+2. **Master Password**: Create a strong master password
+3. **Biometric Setup**: Enable fingerprint/face recognition
+4. **Import Data**: Optionally import existing passwords
+
+### Adding Passwords
+1. Tap the "+" button on the home screen
+2. Enter website, username, and password
+3. Use the built-in generator for strong passwords
+4. Add notes and categories as needed
+
+### Using Advanced Features
+- **Health Dashboard**: Monitor password security from the main menu
+- **Password Generator**: Access advanced generation options
+- **Auto-fill**: Enable in settings for seamless form filling
+- **Analytics**: View usage patterns and security insights
+
+## 🛡️ Security
+
+### Encryption
+- **Algorithm**: AES-256-GCM encryption
+- **Key Derivation**: PBKDF2 with salt
+- **Storage**: Encrypted Hive boxes
+- **Memory**: Secure memory handling
+
+### Authentication
+- **Master Password**: PBKDF2 hashed with salt
+- **Biometric**: Platform-native biometric APIs
+- **Session Management**: Automatic timeout and re-authentication
+
+### Privacy
+- **Local Storage**: All data stored locally by default
+- **No Tracking**: No user analytics or tracking
+- **Open Source**: Transparent security implementation
+
+## 🧪 Testing
+
+Run tests with:
+```bash
+flutter test
+```
+
+For integration tests:
+```bash
+flutter drive --target=test_driver/app.dart
+```
+
+## 📦 Dependencies
+
+### Core Dependencies
+- `flutter`: UI framework
+- `hive`: Local database
+- `encrypt`: Encryption library
+- `local_auth`: Biometric authentication
+- `provider`: State management
+
+### UI Dependencies
+- `fl_chart`: Charts and analytics
+- `google_fonts`: Typography
+- `lottie`: Animations
+- `shimmer`: Loading effects
+
+### Utility Dependencies
+- `http`: API requests
+- `url_launcher`: External links
+- `qr_flutter`: QR code generation
+- `clipboard`: Clipboard operations
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow Flutter/Dart style guidelines
+- Add tests for new features
+- Update documentation
+- Ensure security best practices
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
 
 ### Common Issues
+- **Biometric not working**: Check device permissions and hardware support
+- **Data not syncing**: Verify network connection and Firebase configuration
+- **App crashes**: Check logs and ensure all dependencies are installed
 
-1. **setState() called during build**: Fixed by using `WidgetsBinding.instance.addPostFrameCallback`
-2. **Hot reload not working**: Ensure all dependencies are properly installed
-3. **Hive adapter errors**: Run `dart run build_runner build` to regenerate adapters
+### Getting Help
+- 📧 Email: support@vaultmate.app
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/vaultmate/issues)
+- 📖 Documentation: [Wiki](https://github.com/yourusername/vaultmate/wiki)
 
-### Build Issues
+## 🚧 Roadmap
 
-If you encounter build issues:
+### Upcoming Features
+- [ ] Cloud synchronization
+- [ ] Team sharing capabilities
+- [ ] Browser extensions
+- [ ] Two-factor authentication
+- [ ] Secure notes
+- [ ] Password sharing
+- [ ] Advanced breach monitoring
 
-1. Clean the project:
-   ```bash
-   flutter clean
-   ```
+### Version History
+- **v1.0.0**: Initial release with core features
+- **v1.1.0**: Advanced password generator
+- **v1.2.0**: Health dashboard and analytics
+- **v1.3.0**: Smart auto-fill functionality
 
-2. Get dependencies:
-   ```bash
-   flutter pub get
-   ```
+## 🙏 Acknowledgments
 
-3. Regenerate adapters:
-   ```bash
-   dart run build_runner build --delete-conflicting-outputs
-   ```
-
-## Security
-
-- All sensitive data is encrypted using AES-256
-- Encryption keys are stored securely using Flutter Secure Storage
-- No data is transmitted to external servers
-- All data is stored locally on the device
-
-## Dependencies
-
-VaultMate relies on the following key packages:
-
-### Security & Storage
-- **flutter_secure_storage**: Securely store encryption keys
-- **local_auth**: Handle biometric authentication
-- **hive & hive_flutter**: Fast, secure local database
-- **encrypt**: AES-256 encryption implementation
-- **crypto**: Cryptographic functions
-
-### UI & Experience
-- **provider**: State management
-- **flutter_slidable**: Swipeable list items
-- **flutter_staggered_animations**: UI animations
-- **shimmer**: Loading effect animations
-- **flutter_svg**: SVG image rendering
-
-### Utilities
-- **uuid**: Generate unique identifiers
-- **clipboard**: Copy to clipboard functionality
-- **url_launcher**: Open URLs in browser
-- **qr_flutter**: Generate QR codes
-- **permission_handler**: Manage system permissions
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+- Flutter team for the amazing framework
+- Hive team for local storage solution
+- HaveIBeenPwned for breach detection API
+- Material Design for UI guidelines
+- Open source community for inspiration
 
 ---
 
-<p align="center">Made with love for secure password management</p>
+**VaultMate** - Secure your digital life with confidence 🔐

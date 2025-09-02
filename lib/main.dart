@@ -1,12 +1,13 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/encryption_service.dart';
 import 'services/storage_service.dart';
+import 'services/activity_log_service.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -15,19 +16,27 @@ import 'screens/home/profile/terms_of_service_screen.dart';
 import 'screens/home/profile/about_screen.dart';
 import 'screens/home/profile/appearance_settings_screen.dart';
 import 'utils/constants.dart';
+import 'utils/googlesign.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   // Firebase initialization removed
   
   try {
     // Initialize Hive
     await Hive.initFlutter();
+
+    await Supabase.initialize(
+      url: 'https://vbiztcbdutitmvbxozmz.supabase.co',
+      anonKey: 
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiaXp0Y2JkdXRpdG12Ynhvem16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1Mjc4ODksImV4cCI6MjA3MTEwMzg4OX0.6ZIH5I5CQiH3iVmWLKbW9IXWaRuwchYfccGheOJtLe8',
+    );
     
     // Initialize services
+    await GoogleSignInService.initialize();
     await EncryptionService.initialize();
     await StorageService.initialize();
+    await ActivityLogService.initialize();
     
     runApp(const VaultMateApp());
   } catch (e) {

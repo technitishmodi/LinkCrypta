@@ -5,7 +5,6 @@ import '../models/link_entry.dart';
 import '../models/password_activity_log.dart';
 import '../services/storage_service.dart';
 import '../services/encryption_service.dart';
-import '../services/activity_log_service.dart';
 
 class DataProvider extends ChangeNotifier {
   List<PasswordEntry> _passwords = [];
@@ -13,7 +12,7 @@ class DataProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String _searchQuery = '';
-  String _selectedPasswordCategory = 'All';
+  String _selectedCategory = 'All';
   String _selectedLinkCategory = 'All';
 
   List<PasswordEntry> get passwords => _getFilteredPasswords();
@@ -21,7 +20,7 @@ class DataProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get searchQuery => _searchQuery;
-  String get selectedPasswordCategory => _selectedPasswordCategory;
+  String get selectedCategory => _selectedCategory;
   String get selectedLinkCategory => _selectedLinkCategory;
 
   List<PasswordEntry> get favoritePasswords =>
@@ -50,8 +49,13 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSelectedCategory(String category) {
+    _selectedCategory = category;
+    notifyListeners();
+  }
+
   void setSelectedPasswordCategory(String category) {
-    _selectedPasswordCategory = category;
+    _selectedCategory = category;
     notifyListeners();
   }
 
@@ -59,25 +63,10 @@ class DataProvider extends ChangeNotifier {
     _selectedLinkCategory = category;
     notifyListeners();
   }
-  
-  // For backward compatibility
-  void setSelectedCategory(String category) {
-    // Determine which category to update based on the current context
-    // This is a fallback method for existing code
-    if (passwordCategories.contains(category)) {
-      setSelectedPasswordCategory(category);
-    } else if (linkCategories.contains(category)) {
-      setSelectedLinkCategory(category);
-    } else if (category == 'All') {
-      // If 'All' is selected, update both categories
-      setSelectedPasswordCategory(category);
-      setSelectedLinkCategory(category);
-    }
-  }
 
   void clearFilters() {
     _searchQuery = '';
-    _selectedPasswordCategory = 'All';
+    _selectedCategory = 'All';
     _selectedLinkCategory = 'All';
     notifyListeners();
   }
@@ -89,9 +78,9 @@ class DataProvider extends ChangeNotifier {
     List<PasswordEntry> filtered = _passwords;
 
     // Filter by category
-    if (_selectedPasswordCategory != 'All') {
+    if (_selectedCategory != 'All') {
       filtered = filtered
-          .where((p) => p.category == _selectedPasswordCategory)
+          .where((p) => p.category == _selectedCategory)
           .toList();
     }
 
@@ -174,10 +163,6 @@ class DataProvider extends ChangeNotifier {
         category: category,
       );
       _passwords.add(entry);
-      
-      // Log password creation
-      await ActivityLogService.logPasswordCreated(entry);
-      
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -191,23 +176,10 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      // The password in the entry should already be properly encrypted
-      // No need to decrypt and re-encrypt it
-      final box = Hive.box<PasswordEntry>('passwords');
+      await StorageService.updatePassword(entry);
       final index = _passwords.indexWhere((p) => p.id == entry.id);
       if (index != -1) {
-        // Get the old password for logging
-        final oldEntry = _passwords[index];
-        final oldEncryptedPassword = oldEntry.password;
-        
-        await box.putAt(index, entry); // Update in Hive directly
-        _passwords[index] = entry; // Update local list
-        
-        // Log password update if the password actually changed
-        if (oldEncryptedPassword != entry.password) {
-          await ActivityLogService.logPasswordUpdated(entry, oldEncryptedPassword);
-        }
-        
+        _passwords[index] = entry;
         notifyListeners();
       }
     } catch (e) {
@@ -222,9 +194,6 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      // Log password deletion before actually deleting it
-      await ActivityLogService.logPasswordDeleted(entry);
-      
       await StorageService.deletePassword(entry);
       _passwords.removeWhere((p) => p.id == entry.id);
       notifyListeners();
@@ -246,7 +215,6 @@ class DataProvider extends ChangeNotifier {
     _passwords[index] = updatedEntry; // Update local list
     notifyListeners(); // Notify UI
   }
-  
 
   String generatePassword({
     int length = 16,
@@ -262,13 +230,6 @@ class DataProvider extends ChangeNotifier {
       includeNumbers: includeNumbers,
       includeSymbols: includeSymbols,
     );
-  }
-
-  String getDecryptedPassword(PasswordEntry entry) {
-    // Log password view
-    ActivityLogService.logPasswordViewed(entry);
-    
-    return StorageService.decryptPassword(entry.password);
   }
 
   // Link Management
@@ -302,12 +263,10 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      // Update directly in Hive instead of using StorageService
-      final box = Hive.box<LinkEntry>('links');
+      await StorageService.updateLink(entry);
       final index = _links.indexWhere((l) => l.id == entry.id);
       if (index != -1) {
-        await box.putAt(index, entry); // Update in Hive directly
-        _links[index] = entry; // Update local list
+        _links[index] = entry;
         notifyListeners();
       }
     } catch (e) {
@@ -334,26 +293,39 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> toggleLinkFavorite(LinkEntry entry) async {
     final box = Hive.box<LinkEntry>('links');
-    final index = _links.indexWhere((e) => e.id == entry.id);
-    if (index == -1) return;
+    
+    // Find the entry in the Hive box by ID
+    LinkEntry? foundEntry;
+    int hiveIndex = -1;
+    
+    for (int i = 0; i < box.length; i++) {
+      final boxEntry = box.getAt(i);
+      if (boxEntry?.id == entry.id) {
+        foundEntry = boxEntry;
+        hiveIndex = i;
+        break;
+      }
+    }
+    
+    if (foundEntry == null || hiveIndex == -1) return;
 
-    final updatedEntry = entry.copyWith(isFavorite: !entry.isFavorite);
+    final updatedEntry = foundEntry.copyWith(isFavorite: !foundEntry.isFavorite);
 
-    await box.putAt(index, updatedEntry); // Update in Hive
-    _links[index] = updatedEntry; // Update in memory
+    // Update in Hive using the correct index
+    await box.putAt(hiveIndex, updatedEntry);
+    
+    // Update in memory list
+    final memoryIndex = _links.indexWhere((e) => e.id == entry.id);
+    if (memoryIndex != -1) {
+      _links[memoryIndex] = updatedEntry;
+    }
+    
     notifyListeners(); // Update UI
   }
 
   Future<void> toggleLinkBookmark(LinkEntry entry) async {
-    final box = Hive.box<LinkEntry>('links');
-    final index = _links.indexWhere((e) => e.id == entry.id);
-    if (index == -1) return;
-
     final updatedEntry = entry.copyWith(isBookmarked: !entry.isBookmarked);
-    
-    await box.putAt(index, updatedEntry); // Update in Hive directly
-    _links[index] = updatedEntry; // Update local list
-    notifyListeners(); // Notify UI
+    await updateLink(updatedEntry);
   }
 
   // Data Export/Import
@@ -409,31 +381,30 @@ class DataProvider extends ChangeNotifier {
   void clearError() {
     _clearError();
   }
-  
-  // Password Activity Logs
+
+  // Password decryption
+  String getDecryptedPassword(PasswordEntry entry) {
+    return StorageService.decryptPassword(entry.password);
+  }
+
+  // Activity log methods
   List<PasswordActivityLog> getAllPasswordLogs() {
-    return ActivityLogService.getAllLogs();
+    // Return empty list for now - activity logs need to be implemented
+    return [];
   }
-  
+
   List<PasswordActivityLog> getPasswordLogsForPassword(String passwordId) {
-    return ActivityLogService.getLogsForPassword(passwordId);
+    // Return empty list for now - activity logs need to be implemented
+    return [];
   }
-  
-  List<PasswordActivityLog> getPasswordLogsByActivityType(ActivityType type) {
-    return ActivityLogService.getLogsByActivityType(type);
+
+  List<PasswordActivityLog> getPasswordLogsInDateRange(DateTime startDate, DateTime endDate) {
+    // Return empty list for now - activity logs need to be implemented
+    return [];
   }
-  
-  List<PasswordActivityLog> getPasswordLogsInDateRange(DateTime start, DateTime end) {
-    return ActivityLogService.getLogsInDateRange(start, end);
-  }
-  
-  Future<void> clearAllPasswordLogs() async {
-    await ActivityLogService.clearAllLogs();
-    notifyListeners();
-  }
-  
-  Future<void> deleteOldPasswordLogs(DateTime cutoffDate) async {
-    await ActivityLogService.deleteOldLogs(cutoffDate);
-    notifyListeners();
+
+  List<PasswordActivityLog> getPasswordLogsByActivityType(ActivityType activityType) {
+    // Return empty list for now - activity logs need to be implemented
+    return [];
   }
 }

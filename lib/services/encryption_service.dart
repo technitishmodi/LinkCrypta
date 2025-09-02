@@ -16,6 +16,7 @@ class EncryptionService {
   // Private constructor to prevent instantiation
   EncryptionService._();
 
+  /// Initialize Encryption Service
   static Future<void> initialize() async {
     if (_initialized) return;
 
@@ -23,7 +24,7 @@ class EncryptionService {
       // Get or generate encryption key
       String? keyString = await _storage.read(key: _keyName);
       if (keyString == null) {
-        final key = Key.fromSecureRandom(32); // 256-bit key
+        final key = Key.fromSecureRandom(32); // AES-256 = 32 bytes
         keyString = key.base64;
         await _storage.write(key: _keyName, value: keyString);
       }
@@ -31,13 +32,14 @@ class EncryptionService {
       // Get or generate IV
       String? ivString = await _storage.read(key: _ivName);
       if (ivString == null) {
-        final iv = IV.fromSecureRandom(16); // 128-bit IV
+        final iv = IV.fromSecureRandom(16); // AES block size = 16 bytes
         ivString = iv.base64;
         await _storage.write(key: _ivName, value: ivString);
       }
 
-      _iv = IV.fromBase64(ivString);
       final key = Key.fromBase64(keyString);
+      _iv = IV.fromBase64(ivString);
+
       _encrypter = Encrypter(AES(key, mode: AESMode.cbc));
       _initialized = true;
     } catch (e) {
@@ -46,6 +48,7 @@ class EncryptionService {
     }
   }
 
+  /// Encrypt plain text
   static String encrypt(String data) {
     if (!_initialized) {
       throw Exception('EncryptionService not initialized. Call initialize() first.');
@@ -59,6 +62,7 @@ class EncryptionService {
     }
   }
 
+  /// Decrypt encrypted text
   static String decrypt(String encryptedData) {
     if (!_initialized) {
       throw Exception('EncryptionService not initialized. Call initialize() first.');
@@ -72,6 +76,7 @@ class EncryptionService {
     }
   }
 
+  /// Generate a strong random password
   static String generateStrongPassword({
     int length = 16,
     bool includeUppercase = true,
@@ -91,13 +96,14 @@ class EncryptionService {
     if (includeSymbols) chars += symbols;
 
     if (chars.isEmpty) {
-      chars = lowercase + numbers; // Default character set
+      chars = lowercase + numbers; // fallback set
     }
 
     final random = Random.secure();
     return List.generate(length, (index) => chars[random.nextInt(chars.length)]).join();
   }
 
+  /// Hash password with SHA-256
   static String hashPassword(String password) {
     try {
       final bytes = utf8.encode(password);
@@ -108,6 +114,7 @@ class EncryptionService {
     }
   }
 
+  /// Clear stored encryption keys
   static Future<void> clearEncryptionKeys() async {
     try {
       await _storage.delete(key: _keyName);
@@ -118,10 +125,10 @@ class EncryptionService {
     }
   }
 
+  /// Check if service is initialized & keys exist
   static Future<bool> isInitialized() async {
     if (!_initialized) return false;
     
-    // Verify keys actually exist in storage
     try {
       final keyExists = await _storage.containsKey(key: _keyName);
       final ivExists = await _storage.containsKey(key: _ivName);
