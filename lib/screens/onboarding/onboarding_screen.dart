@@ -115,7 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     await OnboardingService.markOnboardingCompleted();
 
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
+      Navigator.of(context).pushReplacementNamed('/login');
     }
   }
 

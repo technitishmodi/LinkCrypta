@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // App Info
-  static const String appName = 'VaultMate';
+  static const String appName = 'LinkCrypta';
   static const String appVersion = '1.0.0';
   static const String appDescription = 'Secure password and link management';
   static const Duration animationMedium = Duration(milliseconds: 400);

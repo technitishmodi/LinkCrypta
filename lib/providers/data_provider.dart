@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:flutter/foundation.dart';
+
 import '../models/password_entry.dart';
 import '../models/link_entry.dart';
 import '../models/password_activity_log.dart';
 import '../services/storage_service.dart';
+import '../services/sync_service.dart';
+import '../services/activity_log_service.dart';
 import '../services/encryption_service.dart';
 
 class DataProvider extends ChangeNotifier {
@@ -163,6 +167,10 @@ class DataProvider extends ChangeNotifier {
         category: category,
       );
       _passwords.add(entry);
+      
+      // Log the password creation activity
+      await ActivityLogService.logPasswordCreated(entry);
+      
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -176,10 +184,19 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      await StorageService.updatePassword(entry);
+      // Get the old entry for logging
       final index = _passwords.indexWhere((p) => p.id == entry.id);
+      final oldEntry = index != -1 ? _passwords[index] : null;
+      
+      await StorageService.updatePassword(entry);
       if (index != -1) {
         _passwords[index] = entry;
+        
+        // Log the password update activity
+        if (oldEntry != null) {
+          await ActivityLogService.logPasswordUpdated(entry, oldEntry.password);
+        }
+        
         notifyListeners();
       }
     } catch (e) {
@@ -194,6 +211,9 @@ class DataProvider extends ChangeNotifier {
     _clearError();
 
     try {
+      // Log the password deletion activity before deleting
+      await ActivityLogService.logPasswordDeleted(entry);
+      
       await StorageService.deletePassword(entry);
       _passwords.removeWhere((p) => p.id == entry.id);
       notifyListeners();
@@ -387,24 +407,145 @@ class DataProvider extends ChangeNotifier {
     return StorageService.decryptPassword(entry.password);
   }
 
+  // Log password view activity
+  Future<void> logPasswordViewed(PasswordEntry entry) async {
+    try {
+      await ActivityLogService.logPasswordViewed(entry);
+    } catch (e) {
+      print('DataProvider: Failed to log password view: $e');
+    }
+  }
+
   // Activity log methods
   List<PasswordActivityLog> getAllPasswordLogs() {
-    // Return empty list for now - activity logs need to be implemented
-    return [];
+    try {
+      return ActivityLogService.getAllLogs();
+    } catch (e) {
+      print('DataProvider: Failed to get all logs: $e');
+      return [];
+    }
   }
 
   List<PasswordActivityLog> getPasswordLogsForPassword(String passwordId) {
-    // Return empty list for now - activity logs need to be implemented
-    return [];
+    try {
+      return ActivityLogService.getLogsForPassword(passwordId);
+    } catch (e) {
+      print('DataProvider: Failed to get logs for password: $e');
+      return [];
+    }
   }
 
   List<PasswordActivityLog> getPasswordLogsInDateRange(DateTime startDate, DateTime endDate) {
-    // Return empty list for now - activity logs need to be implemented
-    return [];
+    try {
+      return ActivityLogService.getLogsInDateRange(startDate, endDate);
+    } catch (e) {
+      print('DataProvider: Failed to get logs in date range: $e');
+      return [];
+    }
   }
 
   List<PasswordActivityLog> getPasswordLogsByActivityType(ActivityType activityType) {
-    // Return empty list for now - activity logs need to be implemented
-    return [];
+    try {
+      return ActivityLogService.getLogsByActivityType(activityType);
+    } catch (e) {
+      print('DataProvider: Failed to get logs by activity type: $e');
+      return [];
+    }
+  }
+
+  // MANUAL FIREBASE SYNC METHODS
+
+  /// Sync a specific password to Firebase when user views password details
+  Future<bool> syncPasswordToFirebase(PasswordEntry password) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final success = await SyncService.syncPasswordToFirebase(password);
+      if (success) {
+        print('DataProvider: Password "${password.name}" synced to Firebase');
+      }
+      return success;
+    } catch (e) {
+      _setError('Failed to sync password: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Sync a specific link to Firebase when user views link details
+  Future<bool> syncLinkToFirebase(LinkEntry link) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final success = await SyncService.syncLinkToFirebase(link);
+      if (success) {
+        print('DataProvider: Link "${link.title}" synced to Firebase');
+      }
+      return success;
+    } catch (e) {
+      _setError('Failed to sync link: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Manual full sync to Firebase - triggered by user action
+  Future<bool> syncAllToFirebase() async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final success = await SyncService.syncAllToFirebase();
+      if (success) {
+        print('DataProvider: All data synced to Firebase');
+      }
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _setError('Failed to sync to Firebase: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Manual sync from Firebase - download cloud data
+  Future<bool> syncFromFirebase() async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final success = await SyncService.syncFromFirebase();
+      if (success) {
+        // Reload local data after sync
+        await loadData();
+        print('DataProvider: Data synced from Firebase');
+      }
+      return success;
+    } catch (e) {
+      _setError('Failed to sync from Firebase: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Check if user can sync with Firebase
+  bool canSyncWithFirebase() {
+    return SyncService.canSync();
+  }
+
+  /// Get sync status information
+  Future<Map<String, dynamic>> getSyncStatus() async {
+    return await SyncService.getSyncStatus();
+  }
+
+  /// Get current user email for display
+  String? getCurrentUserEmail() {
+    return SyncService.getCurrentUserEmail();
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/onboarding_service.dart';
 
 /// Modern Gradient + Glass UI Colors
@@ -63,14 +64,27 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
 
-    final isOnboardingCompleted =
-        await OnboardingService.isOnboardingCompleted();
+    // Check if user is authenticated
+    final user = FirebaseAuth.instance.currentUser;
+    
+    if (user != null) {
+      // User is signed in, go to home
+      Navigator.of(context).pushReplacementNamed('/home');
+      return;
+    }
+
+    // Check onboarding status
+    final isOnboardingCompleted = await OnboardingService.isOnboardingCompleted();
 
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacementNamed(
-      isOnboardingCompleted ? '/home' : '/onboarding',
-    );
+    if (isOnboardingCompleted) {
+      // Onboarding completed but not signed in, show login
+      Navigator.of(context).pushReplacementNamed('/login');
+    } else {
+      // Show onboarding
+      Navigator.of(context).pushReplacementNamed('/onboarding');
+    }
   }
 
   @override

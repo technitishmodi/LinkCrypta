@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../models/password_entry.dart';
-import '../../../utils/helpers.dart';
 import '../../../providers/data_provider.dart';
+import '../../../utils/app_helpers.dart';
+import '../../../utils/modern_colors.dart';
+import '../../../services/sync_service.dart';
 import '../../../services/auth_service.dart';
 import 'edit_password_screen.dart';
 
@@ -30,11 +34,22 @@ class PasswordDetailScreen extends StatefulWidget {
 
 class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
   bool _obscurePassword = true;
+  bool _isSyncing = false;
   final _colorScheme = const {
     'primary': ModernColors.primaryBlue,
     'secondary': ModernColors.primaryBlue,
     'accent': ModernColors.primaryBlue,
   };
+
+  @override
+  void initState() {
+    super.initState();
+    // Log that the password was viewed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final dataProvider = Provider.of<DataProvider>(context, listen: false);
+      dataProvider.logPasswordViewed(widget.password);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -317,6 +332,9 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                             final decryptedPassword = dataProvider.getDecryptedPassword(widget.password);
                             AppHelpers.copyToClipboard(decryptedPassword);
                             AppHelpers.showSnackBar(context, 'Password copied');
+                            
+                            // Log password view activity (since copying counts as viewing)
+                            dataProvider.logPasswordViewed(widget.password);
                           }
                         },
                       ),
@@ -324,17 +342,16 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                    Expanded(
-                      child: _buildActionButton(
-                        context,
-                        icon: Icons.lock_rounded,
-                        label: 'Sync Now',
-                        color: _colorScheme['secondary']!,
-                        onTap: () {
-                      
-                        },
-                      ),
-                    ),
+                _buildActionButton(
+                  context,
+                  icon: _isSyncing ? Icons.sync : Icons.cloud_upload_rounded,
+                  label: _isSyncing ? 'Syncing...' : 'Sync Now',
+                  color: Colors.green.shade600,
+                  onTap: _isSyncing ? null : () async {
+                    await _syncPasswordToFirebase();
+                  },
+                  fullWidth: true,
+                ),
                 if (widget.password.url.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _buildActionButton(
@@ -465,6 +482,9 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                 final decryptedPassword = dataProvider.getDecryptedPassword(widget.password);
                 AppHelpers.copyToClipboard(decryptedPassword);
                 AppHelpers.showSnackBar(context, 'Password copied');
+                
+                // Log password view activity (since copying counts as viewing)
+                dataProvider.logPasswordViewed(widget.password);
               }
             },
             splashRadius: 20,
@@ -481,7 +501,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
     required IconData icon,
     required String label,
     required Color color,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
     bool fullWidth = false,
   }) {
     return SizedBox(
@@ -497,11 +517,20 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  icon,
-                  color: color,
-                  size: 24,
-                ),
+                _isSyncing && label.contains('Sync')
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
+                        ),
+                      )
+                    : Icon(
+                        icon,
+                        color: color,
+                        size: 24,
+                      ),
                 const SizedBox(height: 8),
                 Text(
                   label,
@@ -516,5 +545,62 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
         ),
       ),
     );
+  }
+
+  /// Sync password to Firebase when user clicks "Sync Now"
+  Future<void> _syncPasswordToFirebase() async {
+    // Check if user is authenticated
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      AppHelpers.showSnackBar(
+        context,
+        'Please sign in to sync with Firebase',
+        backgroundColor: Colors.orange,
+      );
+      return;
+    }
+
+    print('DEBUG: Starting sync for user: ${currentUser.email}');
+
+    setState(() {
+      _isSyncing = true;
+    });
+
+    try {
+      // Use the DataProvider's sync method
+      final dataProvider = context.read<DataProvider>();
+      final success = await dataProvider.syncPasswordToFirebase(widget.password);
+
+      if (success) {
+        AppHelpers.showSnackBar(
+          context,
+          'Password synced to Firebase successfully!',
+          backgroundColor: Colors.green,
+        );
+      } else {
+        // Get more detailed error from DataProvider
+        final errorMsg = dataProvider.error ?? 'Unknown error occurred';
+        AppHelpers.showSnackBar(
+          context,
+          'Sync failed: $errorMsg',
+          backgroundColor: Colors.red,
+        );
+        print('DEBUG: Sync failed with error: $errorMsg');
+      }
+    } catch (e) {
+      final errorMsg = 'Sync error: ${e.toString()}';
+      AppHelpers.showSnackBar(
+        context,
+        errorMsg,
+        backgroundColor: Colors.red,
+      );
+      print('DEBUG: Exception during sync: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+        });
+      }
+    }
   }
 }

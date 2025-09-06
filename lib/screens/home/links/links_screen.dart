@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../utils/constants.dart';
 import '../../../providers/data_provider.dart';
 import '../../../models/link_entry.dart';
@@ -1185,49 +1186,70 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
                        isDarkMode,
                      ),
                      const SizedBox(height: 32),
-                     Row(
-                       children: [
-                         Expanded(
-                           child: FilledButton.icon(
-                             onPressed: () {
-                               HapticFeedback.mediumImpact();
-                               Navigator.pop(context);
-                               _showEditLinkDialog(context, link);
-                             },
-                             icon: const Icon(Icons.edit_rounded),
-                             label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w600)),
-                             style: FilledButton.styleFrom(
-                               backgroundColor: colorScheme.primary,
-                               foregroundColor: colorScheme.onPrimary,
-                               padding: const EdgeInsets.symmetric(vertical: 14),
-                               shape: RoundedRectangleBorder(
-                                 borderRadius: BorderRadius.circular(16),
-                               ),
-                             ),
-                           ),
-                         ),
-                         const SizedBox(width: 12),
-                         Expanded(
-                           child: FilledButton.icon(
-                             onPressed: () {
-                               HapticFeedback.mediumImpact();
-                               Navigator.pop(context);
-                               _openLink(link.url);
-                             },
-                             icon: const Icon(Icons.open_in_new_rounded),
-                             label: const Text('Open', style: TextStyle(fontWeight: FontWeight.w600)),
-                             style: FilledButton.styleFrom(
-                               backgroundColor: colorScheme.secondaryContainer,
-                               foregroundColor: colorScheme.onSecondaryContainer,
-                               padding: const EdgeInsets.symmetric(vertical: 14),
-                               shape: RoundedRectangleBorder(
-                                 borderRadius: BorderRadius.circular(16),
-                               ),
-                             ),
-                           ),
-                         ),
-                       ],
-                     ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              Navigator.pop(context);
+                              _showEditLinkDialog(context, link);
+                            },
+                            icon: const Icon(Icons.edit_rounded),
+                            label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w600)),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              Navigator.pop(context);
+                              _openLink(link.url);
+                            },
+                            icon: const Icon(Icons.open_in_new_rounded),
+                            label: const Text('Open', style: TextStyle(fontWeight: FontWeight.w600)),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: colorScheme.secondaryContainer,
+                              foregroundColor: colorScheme.onSecondaryContainer,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () async {
+                          HapticFeedback.mediumImpact();
+                          Navigator.pop(context);
+                          await _syncLinkToFirebase(link);
+                        },
+                        icon: const Icon(Icons.cloud_upload_rounded),
+                        label: const Text('Sync to Firebase', style: TextStyle(fontWeight: FontWeight.w600)),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.green.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
                    ],
                  ),
                ),
@@ -1569,5 +1591,83 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
          );
        }
      }
+  }
+
+  /// Sync link to Firebase when user clicks "Sync to Firebase"
+  Future<void> _syncLinkToFirebase(LinkEntry link) async {
+    // Check if user is authenticated
+    if (FirebaseAuth.instance.currentUser == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please sign in to sync with Firebase'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text('Syncing link to Firebase...'),
+              ],
+            ),
+            backgroundColor: Colors.blue,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Use the DataProvider's sync method
+      final dataProvider = context.read<DataProvider>();
+      final success = await dataProvider.syncLinkToFirebase(link);
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Link synced to Firebase successfully!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to sync link to Firebase'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sync error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 }

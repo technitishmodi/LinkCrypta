@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../../services/onboarding_service.dart';
+import '../../../services/firebase_auth_service.dart';
+import '../../../utils/helpers.dart';
+import '../../../providers/data_provider.dart';
 import 'security_settings_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
@@ -17,8 +22,110 @@ class ModernColors {
   static const Color textLight = Color(0xFF757575);
 }
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  User? _currentUser;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentUser();
+  }
+
+  void _getCurrentUser() {
+    setState(() {
+      _currentUser = FirebaseAuth.instance.currentUser;
+    });
+  }
+
+  Future<void> _handleLogout() async {
+    final confirmed = await _showLogoutDialog();
+    if (!confirmed) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await FirebaseAuthService.signOut();
+      
+      if (result.success && mounted) {
+        // Navigate to login screen
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/login',
+          (route) => false,
+        );
+      } else if (mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          result.message,
+          backgroundColor: Colors.red,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          'Error during logout: ${e.toString()}',
+          backgroundColor: Colors.red,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<bool> _showLogoutDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Sign Out',
+          style: TextStyle(
+            color: ModernColors.textDark,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to sign out? You\'ll need to sign in again to access your vault.',
+          style: TextStyle(
+            color: ModernColors.textLight,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: ModernColors.textLight),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    ) ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,11 +163,25 @@ class ProfileScreen extends StatelessWidget {
                     color: ModernColors.primaryBlue,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.person_rounded,
-                    color: ModernColors.white,
-                    size: 30,
-                  ),
+                  child: _currentUser?.photoURL != null
+                      ? ClipOval(
+                          child: Image.network(
+                            _currentUser!.photoURL!,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person_rounded,
+                              color: ModernColors.white,
+                              size: 30,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.person_rounded,
+                          color: ModernColors.white,
+                          size: 30,
+                        ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -68,7 +189,7 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'VaultMate User',
+                        _currentUser?.displayName ?? 'LinkCrypta User',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -77,12 +198,30 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Secure Password Manager',
+                        _currentUser?.email ?? 'Secure Password Manager',
                         style: TextStyle(
                           fontSize: 14,
                           color: ModernColors.textLight,
                         ),
                       ),
+                      if (_currentUser != null) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Google Account',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -147,35 +286,39 @@ class ProfileScreen extends StatelessWidget {
             },
           ),
           
-          _buildSettingsItem(
-            context,
-            icon: Icons.backup_rounded,
-            title: 'Backup & Restore',
-            subtitle: 'Export and import your data',
-            onTap: () {
-              // TODO: Navigate to backup settings
-            },
+          if (_currentUser != null)
+            _buildSettingsItem(
+              context,
+              icon: Icons.cloud_upload_rounded,
+              title: 'Sync All to Firebase',
+              subtitle: 'Upload all passwords and links to cloud',
+              onTap: () => _syncAllToFirebase(),
+            ),
+          
+          const SizedBox(height: 24),
+          
+          // Account Section
+          Text(
+            'Account',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ModernColors.textDark,
+            ),
           ),
           
-          _buildSettingsItem(
-            context,
-            icon: Icons.notifications_rounded,
-            title: 'Notifications',
-            subtitle: 'Manage app notifications',
-            onTap: () {
-              // TODO: Navigate to notification settings
-            },
-          ),
+          const SizedBox(height: 12),
           
-          _buildSettingsItem(
-            context,
-            icon: Icons.palette_rounded,
-            title: 'Appearance',
-            subtitle: 'Customize app theme',
-            onTap: () {
-              Navigator.of(context).pushNamed('/appearance');
-            },
-          ),
+          if (_currentUser == null)
+            _buildSettingsItem(
+              context,
+              icon: Icons.login_rounded,
+              title: 'Sign In',
+              subtitle: 'Sign in to sync your data across devices',
+              onTap: () {
+                Navigator.of(context).pushReplacementNamed('/login');
+              },
+            ),
           
           const SizedBox(height: 24),
           
@@ -194,7 +337,7 @@ class ProfileScreen extends StatelessWidget {
           _buildSettingsItem(
             context,
             icon: Icons.info_rounded,
-            title: 'About VaultMate',
+            title: 'About LinkCrypta',
             subtitle: 'Version 1.0.0',
             onTap: () {
               Navigator.of(context).push(
@@ -270,9 +413,7 @@ class ProfileScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () {
-                // TODO: Implement logout
-              },
+              onPressed: _isLoading ? null : _handleLogout,
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red,
                 side: BorderSide(color: Colors.red),
@@ -281,13 +422,22 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: _isLoading
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                      ),
+                    )
+                  : Text(
+                      _currentUser != null ? 'Sign Out' : 'Not Signed In',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -385,6 +535,99 @@ class ProfileScreen extends StatelessWidget {
             child: const Text('Reset'),
           ),
         ],
+      ),
+    ) ?? false;
+  }
+
+  /// Sync all data to Firebase
+  Future<void> _syncAllToFirebase() async {
+    if (_currentUser == null) {
+      AppHelpers.showSnackBar(
+        context,
+        'Please sign in to sync with Firebase',
+        backgroundColor: Colors.orange,
+      );
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed = await _showSyncConfirmationDialog(
+      'Sync All to Firebase',
+      'This will upload all your passwords and links to Firebase. Continue?',
+    );
+    if (!confirmed) return;
+
+    try {
+      // Show loading indicator
+      AppHelpers.showSnackBar(
+        context,
+        'Syncing all data to Firebase...',
+        backgroundColor: Colors.blue,
+      );
+
+      final dataProvider = context.read<DataProvider>();
+      final success = await dataProvider.syncAllToFirebase();
+
+      if (success) {
+        AppHelpers.showSnackBar(
+          context,
+          'All data synced to Firebase successfully!',
+          backgroundColor: Colors.green,
+        );
+      } else {
+        AppHelpers.showSnackBar(
+          context,
+          'Failed to sync all data to Firebase',
+          backgroundColor: Colors.red,
+        );
+      }
+    } catch (e) {
+      AppHelpers.showSnackBar(
+        context,
+        'Sync error: ${e.toString()}',
+        backgroundColor: Colors.red,
+      );
+    }
+  }
+
+  /// Show sync confirmation dialog
+  Future<bool> _showSyncConfirmationDialog(String title, String message) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          title,
+          style: TextStyle(
+            color: ModernColors.textDark,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(
+            color: ModernColors.textLight,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: ModernColors.textLight),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ModernColors.primaryBlue,
+              foregroundColor: ModernColors.white,
+            ),
+            child: const Text('Continue'),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
     ) ?? false;
   }

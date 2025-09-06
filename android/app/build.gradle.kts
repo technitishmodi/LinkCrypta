@@ -1,12 +1,12 @@
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    // Google services plugin removed
 }
 
 android {
-    namespace = "com.example.flutter_application_1"
+    namespace = "com.linkcrypta.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.flutter_application_1"
+        applicationId = "com.linkcrypta.app"
         minSdk = 23 // Minimum SDK version for app features
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

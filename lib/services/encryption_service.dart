@@ -6,8 +6,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class EncryptionService {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
-  static const String _keyName = 'vaultmate_encryption_key';
-  static const String _ivName = 'vaultmate_encryption_iv';
+  static const String _keyName = 'linkcrypta_encryption_key';
+  static const String _ivName = 'linkcrypta_encryption_iv';
   
   static late Encrypter _encrypter;
   static late IV _iv;
