@@ -233,7 +233,6 @@ class SyncService {
       final userId = currentUser.uid;
       final firestore = FirebaseFirestore.instance;
       
-      print('SyncService: Attempting to sync password "${password.name}" for user $userId');
       
       // Store password in Firebase under user's collection
       await firestore
@@ -243,10 +242,8 @@ class SyncService {
           .doc(password.id)
           .set(password.toJson());
       
-      print('SyncService: Password "${password.name}" synced to Firebase successfully');
       return true;
     } catch (e) {
-      print('SyncService: Failed to sync password to Firebase: $e');
       
       // Provide more specific error messages
       if (e.toString().contains('PERMISSION_DENIED')) {
@@ -278,28 +275,149 @@ class SyncService {
           .doc(link.id)
           .set(link.toJson());
       
-      print('SyncService: Link "${link.title}" synced to Firebase successfully');
       return true;
     } catch (e) {
-      print('SyncService: Failed to sync link to Firebase: $e');
       return false;
     }
   }
 
-  /// Sync all data to Firebase (placeholder - currently just returns true)
+  /// Sync all data to Firebase - uploads all passwords and links to Firestore
   static Future<bool> syncAllToFirebase() async {
-    // For now, this is a no-op since we don't have Firebase storage
-    // In the future, this would sync all data to Firebase
-    // All local data synced to Firebase (placeholder)
-    return true;
+    if (!_isUserAuthenticated) {
+      print('SyncService: Cannot sync all data - user not authenticated');
+      return false;
+    }
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      final firestore = FirebaseFirestore.instance;
+      
+      // Get all local data
+      final passwords = await getAllPasswords();
+      final links = await getAllLinks();
+      
+      
+      // Sync all passwords
+      for (final password in passwords) {
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('passwords')
+            .doc(password.id)
+            .set(password.toJson());
+      }
+      
+      // Sync all links
+      for (final link in links) {
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('links')
+            .doc(link.id)
+            .set(link.toJson());
+      }
+      
+      return true;
+    } catch (e) {
+      
+      // Provide more specific error messages
+      if (e.toString().contains('PERMISSION_DENIED')) {
+        throw Exception('Cloud Firestore API not enabled. Please enable it in Firebase Console.');
+      } else if (e.toString().contains('network')) {
+        throw Exception('Network error. Please check your internet connection.');
+      } else {
+        throw Exception('Sync failed: ${e.toString()}');
+      }
+    }
   }
 
-  /// Sync from Firebase (placeholder - currently just returns true)
+  /// Sync from Firebase - downloads all data from Firestore and merges with local data
   static Future<bool> syncFromFirebase() async {
-    // For now, this is a no-op since we don't have Firebase storage
-    // In the future, this would sync data from Firebase
-    print('SyncService: syncFromFirebase called (placeholder)');
-    return true;
+    if (!_isUserAuthenticated) {
+      return false;
+    }
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      final firestore = FirebaseFirestore.instance;
+      
+      
+      // Get Firebase data
+      final passwordsSnapshot = await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('passwords')
+          .get();
+          
+      final linksSnapshot = await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('links')
+          .get();
+      
+      // Get local data for comparison
+      final localPasswords = await getAllPasswords();
+      final localLinks = await getAllLinks();
+      
+      int passwordsAdded = 0;
+      int linksAdded = 0;
+      
+      // Process Firebase passwords
+      for (final doc in passwordsSnapshot.docs) {
+        try {
+          final firebasePassword = PasswordEntry.fromJson(doc.data());
+          
+          // Check if password already exists locally
+          final exists = localPasswords.any((local) => local.id == firebasePassword.id);
+          
+          if (!exists) {
+            await StorageService.addPassword(
+              name: firebasePassword.name,
+              username: firebasePassword.username,
+              password: firebasePassword.password,
+              url: firebasePassword.url,
+              notes: firebasePassword.notes,
+              category: firebasePassword.category,
+            );
+            passwordsAdded++;
+          }
+        } catch (e) {
+        }
+      }
+      
+      // Process Firebase links
+      for (final doc in linksSnapshot.docs) {
+        try {
+          final firebaseLink = LinkEntry.fromJson(doc.data());
+          
+          // Check if link already exists locally
+          final exists = localLinks.any((local) => local.id == firebaseLink.id);
+          
+          if (!exists) {
+            await StorageService.addLink(
+              title: firebaseLink.title,
+              description: firebaseLink.description,
+              url: firebaseLink.url,
+              category: firebaseLink.category,
+            );
+            linksAdded++;
+          }
+        } catch (e) {
+        }
+      }
+      
+      return true;
+    } catch (e) {
+      
+      // Provide more specific error messages
+      if (e.toString().contains('PERMISSION_DENIED')) {
+        throw Exception('Cloud Firestore API not enabled. Please enable it in Firebase Console.');
+      } else if (e.toString().contains('network')) {
+        throw Exception('Network error. Please check your internet connection.');
+      } else {
+        throw Exception('Sync failed: ${e.toString()}');
+      }
+    }
   }
 
   /// Check if sync is possible (returns true if user is authenticated)

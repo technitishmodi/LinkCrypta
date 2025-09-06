@@ -3,7 +3,20 @@ import 'package:provider/provider.dart';
 
 import '../../../../models/link_entry.dart';
 import '../../../../providers/data_provider.dart';
-import '../../../../providers/theme_provider.dart';
+
+// Modern Colors for unified theming
+class ModernColors {
+  static const Color primary = Color(0xFF6200EE);
+  static const Color primaryVariant = Color(0xFF3700B3);
+  static const Color secondary = Color(0xFF03DAC6);
+  static const Color background = Color(0xFFF5F5F5);
+  static const Color surface = Colors.white;
+  static const Color onPrimary = Colors.white;
+  static const Color onSecondary = Color(0xFF000000);
+  static const Color onBackground = Color(0xFF000000);
+  static const Color onSurface = Color(0xFF000000);
+  static const Color error = Color(0xFFB00020);
+}
 
 class AddEditLinkDialog extends StatefulWidget {
   final LinkEntry? linkToEdit;
@@ -22,19 +35,29 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
   final _titleController = TextEditingController();
   final _urlController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _categoryController = TextEditingController();
-  
+  String _selectedCategory = 'General';
   bool _isLoading = false;
+  List<String> _availableCategories = [];
   
   @override
   void initState() {
     super.initState();
+    _loadCategories();
     if (widget.linkToEdit != null) {
       _titleController.text = widget.linkToEdit!.title;
       _urlController.text = widget.linkToEdit!.url;
       _descriptionController.text = widget.linkToEdit!.description;
-      _categoryController.text = widget.linkToEdit!.category;
+      _selectedCategory = widget.linkToEdit!.category.isNotEmpty 
+          ? widget.linkToEdit!.category 
+          : 'General';
     }
+  }
+
+  void _loadCategories() {
+    final dataProvider = Provider.of<DataProvider>(context, listen: false);
+    _availableCategories = dataProvider.linkCategories
+        .where((category) => category != 'All') // Remove 'All' from dropdown options
+        .toList();
   }
 
   @override
@@ -42,13 +65,11 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
     _titleController.dispose();
     _urlController.dispose();
     _descriptionController.dispose();
-    _categoryController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
     final isEditing = widget.linkToEdit != null;
 
     return Dialog(
@@ -56,28 +77,35 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500),
         decoration: BoxDecoration(
-          color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+          color: ModernColors.surface,
           borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(isDarkMode, isEditing),
-            _buildForm(isDarkMode),
-            _buildActions(isDarkMode, isEditing),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
           ],
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHeader(isEditing),
+              _buildForm(),
+              _buildActions(isEditing),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(bool isDarkMode, bool isEditing) {
+  Widget _buildHeader(bool isEditing) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDarkMode 
-            ? const Color(0xFF3B82F6).withOpacity(0.1)
-            : const Color(0xFF3B82F6).withOpacity(0.05),
+        color: ModernColors.primary.withOpacity(0.05),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -89,12 +117,12 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6),
+              color: ModernColors.primary,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isEditing ? Icons.edit : Icons.add_link,
-              color: Colors.white,
+              color: ModernColors.onPrimary,
               size: 24,
             ),
           ),
@@ -105,10 +133,10 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
               children: [
                 Text(
                   isEditing ? 'Edit Link' : 'Add New Link',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
+                    color: ModernColors.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -118,7 +146,7 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
                       : 'Save important links for quick access',
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
@@ -129,7 +157,7 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
     );
   }
 
-  Widget _buildForm(bool isDarkMode) {
+  Widget _buildForm() {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Form(
@@ -141,7 +169,6 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
               label: 'Title',
               hint: 'Enter link title',
               icon: Icons.title,
-              isDarkMode: isDarkMode,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a title';
@@ -153,17 +180,13 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
             _buildTextField(
               controller: _urlController,
               label: 'URL',
-              hint: 'https://example.com',
+              hint: 'https://example.com or any text',
               icon: Icons.link,
-              isDarkMode: isDarkMode,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a URL';
                 }
-                final uri = Uri.tryParse(value);
-                if (uri == null || !uri.hasAbsolutePath) {
-                  return 'Please enter a valid URL';
-                }
+                // Allow any non-empty string as URL
                 return null;
               },
             ),
@@ -173,23 +196,10 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
               label: 'Description (Optional)',
               hint: 'Brief description of the link',
               icon: Icons.description,
-              isDarkMode: isDarkMode,
               maxLines: 3,
             ),
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: _categoryController,
-              label: 'Category',
-              hint: 'e.g., Work, Personal, Learning',
-              icon: Icons.category,
-              isDarkMode: isDarkMode,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a category';
-                }
-                return null;
-              },
-            ),
+            _buildCategoryDropdown(),
           ],
         ),
       ),
@@ -201,66 +211,114 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
     required String label,
     required String hint,
     required IconData icon,
-    required bool isDarkMode,
     String? Function(String?)? validator,
-    int maxLines = 1,
+    int? maxLines,
   }) {
     return TextFormField(
       controller: controller,
+      maxLines: maxLines ?? 1,
       validator: validator,
-      maxLines: maxLines,
-      style: TextStyle(
-        color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
-      ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon),
-        labelStyle: TextStyle(
-          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-        ),
-        hintStyle: TextStyle(
-          color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
-        ),
+        prefixIcon: Icon(icon, color: ModernColors.primary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: isDarkMode ? const Color(0xFF334155) : Colors.grey[300]!,
-          ),
+          borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+          borderSide: const BorderSide(color: ModernColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: ModernColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: ModernColors.error, width: 2),
         ),
         filled: true,
-        fillColor: isDarkMode ? const Color(0xFF374151) : Colors.grey[50],
+        fillColor: ModernColors.surface,
       ),
     );
   }
 
-  Widget _buildActions(bool isDarkMode, bool isEditing) {
-    return Padding(
+  Widget _buildCategoryDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedCategory,
+      decoration: InputDecoration(
+        labelText: 'Category',
+        hintText: 'Select a category',
+        prefixIcon: const Icon(Icons.category, color: ModernColors.primary),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: ModernColors.primary, width: 2),
+        ),
+        filled: true,
+        fillColor: ModernColors.surface,
+      ),
+      items: _availableCategories.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      onChanged: (String? newValue) {
+        if (newValue != null) {
+          setState(() {
+            _selectedCategory = newValue;
+          });
+        }
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select a category';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildActions(bool isEditing) {
+    return Container(
       padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: ModernColors.background.withOpacity(0.3),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
       child: Row(
         children: [
           Expanded(
-            child: TextButton(
+            child: OutlinedButton(
               onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
+              style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                side: BorderSide(color: Colors.grey[300]!),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(
+              child: const Text(
                 'Cancel',
                 style: TextStyle(
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  color: ModernColors.onSurface,
                 ),
               ),
             ),
@@ -270,8 +328,8 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleSubmit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
+                backgroundColor: ModernColors.primary,
+                foregroundColor: ModernColors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -284,11 +342,13 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          ModernColors.onPrimary,
+                        ),
                       ),
                     )
                   : Text(
-                      isEditing ? 'Update' : 'Add Link',
+                      isEditing ? 'Update Link' : 'Add Link',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -315,7 +375,7 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
           title: _titleController.text.trim(),
           url: _urlController.text.trim(),
           description: _descriptionController.text.trim(),
-          category: _categoryController.text.trim(),
+          category: _selectedCategory,
         );
         await dataProvider.updateLink(updatedLink);
       } else {
@@ -324,7 +384,7 @@ class _AddEditLinkDialogState extends State<AddEditLinkDialog> {
           title: _titleController.text.trim(),
           url: _urlController.text.trim(),
           description: _descriptionController.text.trim(),
-          category: _categoryController.text.trim(),
+          category: _selectedCategory,
         );
       }
 

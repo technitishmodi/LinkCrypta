@@ -3,15 +3,38 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:flutter/services.dart';
 
-import '../../../utils/constants.dart';
 import '../../../providers/data_provider.dart';
 import '../../../models/link_entry.dart';
-import '../../../providers/theme_provider.dart';
+import '../../../utils/helpers.dart';
 import 'widgets/link_card.dart';
-import 'widgets/link_empty_state.dart';
 import 'widgets/link_search_field.dart';
 import 'widgets/link_category_filter.dart';
 import 'widgets/add_edit_link_dialog.dart';
+
+// Modern unified color scheme matching password screen
+class ModernColors {
+  // Main colors
+  static const Color primary = Color(0xFF6200EE);       // Deep purple
+  static const Color secondary = Color(0xFF03DAC6);     // Teal
+  static const Color accent = Color(0xFFBB86FC);        // Light purple
+  
+  // Background colors
+  static const Color background = Color(0xFFF5F5F7);    // Light gray background
+  static const Color surface = Color(0xFFFFFFFF);       // White surface
+  static const Color surfaceVariant = Color(0xFFF3F3F3); // Light gray surface
+  
+  // Text colors
+  static const Color textPrimary = Color(0xFF1F1F1F);   // Almost black
+  static const Color textSecondary = Color(0xFF6E6E6E);  // Dark gray
+  static const Color textTertiary = Color(0xFF9E9E9E);   // Medium gray
+  
+  // Utility colors
+  static const Color error = Color(0xFFB00020);         // Error red
+  static const Color success = Color(0xFF4CAF50);       // Success green
+  static const Color warning = Color(0xFFFFA000);       // Warning amber
+  static const Color info = Color(0xFF2196F3);          // Info blue
+  static const Color divider = Color(0xFFE0E0E0);       // Light gray divider
+}
 
 class LinksScreen extends StatefulWidget {
   const LinksScreen({super.key});
@@ -20,114 +43,313 @@ class LinksScreen extends StatefulWidget {
   State<LinksScreen> createState() => _LinksScreenState();
 }
 
-class _LinksScreenState extends State<LinksScreen> 
-    with SingleTickerProviderStateMixin {
+class _LinksScreenState extends State<LinksScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
-  bool _isSearchVisible = false;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  
+  bool _showSearchBar = false;
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: AppConstants.animationMedium,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-    _animationController.forward();
+    Future.microtask(() {
+      Provider.of<DataProvider>(context, listen: false).loadData();
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _animationController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshData() async {
+    try {
+      final dataProvider = context.read<DataProvider>();
+      
+      // Check if user can sync with Firebase
+      if (dataProvider.canSyncWithFirebase()) {
+        // Sync all links to Firebase
+        final success = await dataProvider.syncAllToFirebase();
+        if (success) {
+          // Also sync from Firebase to get any cloud updates
+          await dataProvider.syncFromFirebase();
+        }
+      }
+      
+      // Load local data
+      await dataProvider.loadData();
+      
+      if (mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          dataProvider.canSyncWithFirebase() 
+              ? 'Links synced with Firebase successfully'
+              : 'Links refreshed (local only - sign in to sync with cloud)',
+          backgroundColor: ModernColors.success,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          'Failed to sync: ${e.toString()}',
+          backgroundColor: ModernColors.error,
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
-      backgroundColor: isDarkMode 
-          ? const Color(0xFF0F172A) 
-          : colorScheme.surface,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          HapticFeedback.mediumImpact();
-          _showAddLinkDialog();
-        },
-        backgroundColor: colorScheme.primaryContainer,
-        foregroundColor: colorScheme.onPrimaryContainer,
-        elevation: isDarkMode ? 2 : 4,
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        label: const Text(
-          'Add Link',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        icon: const Icon(Icons.add),
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: _OptimizedLinksBody(
-          searchController: _searchController,
-          selectedCategory: _selectedCategory,
-          isSearchVisible: _isSearchVisible,
-          onCategorySelected: (category) {
-            setState(() => _selectedCategory = category);
-            Provider.of<DataProvider>(context, listen: false).setSelectedLinkCategory(category);
-          },
-          onSearchToggled: () {
-            setState(() {
-              _isSearchVisible = !_isSearchVisible;
-              if (!_isSearchVisible) {
-                _searchController.clear();
-                Provider.of<DataProvider>(context, listen: false).setSearchQuery('');
-              }
-            });
-          },
-          onAddLinkPressed: _showAddLinkDialog,
-          onLinkTap: (link) => _showLinkDetails(link, isDarkMode),
-          onLinkAction: _handleLinkAction,
-          isDarkMode: isDarkMode,
-        ),
-      ),
-    );
-  }
-
-  void _showAddLinkDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => const AddEditLinkDialog(),
-    );
-  }
-
-  void _showLinkDetails(LinkEntry link, bool isDarkMode) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          decoration: BoxDecoration(
-            color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(24),
+      backgroundColor: ModernColors.background,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: ModernColors.primary,
+        foregroundColor: Colors.white,
+        title: const Text(
+          'Links',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
           ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _showSearchBar ? Icons.close : Icons.search,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                _showSearchBar = !_showSearchBar;
+                if (!_showSearchBar) {
+                  _searchController.clear();
+                  context.read<DataProvider>().setSearchQuery('');
+                }
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.add, color: Colors.white),
+            onPressed: _navigateToAddLink,
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Search Bar with Animation
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: _showSearchBar ? 60 : 0,
+            child: _showSearchBar
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: LinkSearchField(
+                      controller: _searchController,
+                      isDarkMode: false, // Using light theme for unified design
+                      onChanged: (query) {
+                        context.read<DataProvider>().setSearchQuery(query);
+                      },
+                      onClear: () {
+                        _searchController.clear();
+                        context.read<DataProvider>().setSearchQuery('');
+                        setState(() => _showSearchBar = false);
+                      },
+                    ),
+                  )
+                : const SizedBox(),
+          ),
+
+          // Category Filter with Elevation
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Consumer<DataProvider>(
+              builder: (context, dataProvider, child) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: LinkCategoryFilter(
+                    categories: dataProvider.linkCategories,
+                    selectedCategory: _selectedCategory,
+                    isDarkMode: false, // Using light theme for unified design
+                    onCategorySelected: (category) {
+                      setState(() => _selectedCategory = category);
+                      dataProvider.setSelectedLinkCategory(category);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Scrollable Links List with Refresh and Animations
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                final dataProvider = context.read<DataProvider>();
+                await dataProvider.loadData();
+              },
+              color: ModernColors.primary,
+              backgroundColor: ModernColors.surface,
+              strokeWidth: 2.5,
+              child: Consumer<DataProvider>(
+                builder: (context, dataProvider, child) {
+                  if (dataProvider.isLoading && dataProvider.links.isEmpty) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 20),
+                          CircularProgressIndicator(
+                            color: ModernColors.primary,
+                            strokeWidth: 3,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading links...',
+                            style: TextStyle(
+                              color: ModernColors.textSecondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final links = dataProvider.links;
+
+                  if (links.isEmpty) {
+                    return _buildEmptyState(true);
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    itemCount: links.length,
+                    itemBuilder: (context, index) {
+                      final link = links[index];
+                      return AnimatedOpacity(
+                        duration: Duration(milliseconds: 300 + (index * 30)),
+                        opacity: 1.0,
+                        curve: Curves.easeInOut,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: LinkCard(
+                            link: link,
+                            onTap: () => _navigateToLinkDetail(link),
+                            onAction: (action, link) => _handleLinkAction(action, link),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 16, right: 8),
+        child: FloatingActionButton.extended(
+          backgroundColor: ModernColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onPressed: _navigateToAddLink,
+          icon: const Icon(Icons.add, size: 24),
+          label: const Text(
+            'Add Link',
+            style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool noLinks) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildDetailHeader(link, isDarkMode),
-              _buildDetailContent(link, isDarkMode),
-              _buildDetailActions(link, isDarkMode),
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: ModernColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  noLinks ? Icons.link_outlined : Icons.search_off_rounded,
+                  size: 60,
+                  color: ModernColors.primary,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                noLinks ? 'No Links Yet' : 'No Results Found',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: ModernColors.textPrimary,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                noLinks
+                    ? 'Save and organize your important links in one secure place.'
+                    : 'Try a different search term or category filter.',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: ModernColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              if (noLinks)
+                ElevatedButton.icon(
+                  onPressed: _navigateToAddLink,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Your First Link'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ModernColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -135,65 +357,184 @@ class _LinksScreenState extends State<LinksScreen>
     );
   }
 
-  Widget _buildDetailHeader(LinkEntry link, bool isDarkMode) {
+  void _navigateToAddLink() {
+    showDialog(
+      context: context,
+      builder: (context) => const AddEditLinkDialog(),
+    );
+  }
+
+  void _navigateToLinkDetail(LinkEntry link) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildLinkDetailsModal(link),
+    );
+  }
+
+  Widget _buildLinkDetailsModal(LinkEntry link) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDarkMode 
-            ? const Color(0xFF3B82F6).withOpacity(0.1)
-            : const Color(0xFF3B82F6).withOpacity(0.05),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: ModernColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Row(
+      child: Column(
         children: [
+          // Handle bar
           Container(
-            width: 48,
-            height: 48,
+            margin: const EdgeInsets.only(top: 12),
+            width: 50,
+            height: 4,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.link,
-              color: Colors.white,
-              size: 24,
+              color: ModernColors.divider,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: 16),
+          
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: ModernColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.link,
+                    color: ModernColors.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        link.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: ModernColors.textPrimary,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (link.category.isNotEmpty)
+                        Text(
+                          link.category,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: ModernColors.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: ModernColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          
+          const Divider(height: 1, color: ModernColors.divider),
+          
+          // Content
           Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (link.description.isNotEmpty) ...[
+                    _buildDetailSection('Description', link.description),
+                    const SizedBox(height: 20),
+                  ],
+                  _buildDetailSection('URL', link.url, isUrl: true),
+                  const SizedBox(height: 20),
+                  _buildDetailSection('Created', _formatDateTime(link.createdAt)),
+                ],
+              ),
+            ),
+          ),
+          
+          // Actions
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              border: Border(top: BorderSide(color: ModernColors.divider)),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        link.title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
+                      child: TextButton.icon(
+                        onPressed: () => _openLink(link.url),
+                        icon: const Icon(Icons.open_in_new),
+                        label: const Text('Open Link'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                    if (link.isFavorite)
-                      const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                        size: 20,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          _toggleFavorite(link);
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(link.isFavorite ? Icons.favorite_border : Icons.favorite),
+                        label: Text(link.isFavorite ? 'Unfavorite' : 'Favorite'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ModernColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  link.category,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                  ),
+                const SizedBox(height: 12),
+                // Sync button row
+                Consumer<DataProvider>(
+                  builder: (context, dataProvider, child) {
+                    if (!dataProvider.canSyncWithFirebase()) {
+                      return const SizedBox.shrink();
+                    }
+                    
+                    return SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _syncLinkToFirebase(link),
+                        icon: const Icon(Icons.cloud_upload, size: 18),
+                        label: const Text('Sync to Cloud'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: ModernColors.primary),
+                          foregroundColor: ModernColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -203,38 +544,16 @@ class _LinksScreenState extends State<LinksScreen>
     );
   }
 
-  Widget _buildDetailContent(LinkEntry link, bool isDarkMode) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (link.description.isNotEmpty) ...[
-            _buildDetailSection('Description', link.description, isDarkMode),
-            const SizedBox(height: 20),
-          ],
-          _buildDetailSection('URL', link.url, isDarkMode, isUrl: true),
-          const SizedBox(height: 20),
-          _buildDetailSection(
-            'Created', 
-            _formatDateTime(link.createdAt), 
-            isDarkMode,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailSection(String title, String content, bool isDarkMode, {bool isUrl = false}) {
+  Widget _buildDetailSection(String title, String content, {bool isUrl = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            color: ModernColors.textSecondary,
           ),
         ),
         const SizedBox(height: 8),
@@ -242,19 +561,14 @@ class _LinksScreenState extends State<LinksScreen>
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF8FAFC),
+            color: ModernColors.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
-            border: isDarkMode 
-                ? Border.all(color: const Color(0xFF4B5563))
-                : null,
           ),
           child: Text(
             content,
             style: TextStyle(
               fontSize: 14,
-              color: isUrl 
-                  ? const Color(0xFF3B82F6)
-                  : isDarkMode ? Colors.white : const Color(0xFF1E293B),
+              color: isUrl ? ModernColors.info : ModernColors.textPrimary,
               fontFamily: isUrl ? 'monospace' : null,
             ),
           ),
@@ -263,131 +577,8 @@ class _LinksScreenState extends State<LinksScreen>
     );
   }
 
-  Widget _buildDetailActions(LinkEntry link, bool isDarkMode) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextButton.icon(
-              onPressed: () => _openLink(link.url),
-              icon: const Icon(Icons.open_in_new),
-              label: const Text('Open Link'),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Toggling favorite from details view for: ${link.title}
-                Provider.of<DataProvider>(context, listen: false)
-                    .toggleLinkFavorite(link);
-                Navigator.of(context).pop();
-              },
-              icon: Icon(link.isFavorite ? Icons.favorite_border : Icons.favorite),
-              label: Text(link.isFavorite ? 'Unfavorite' : 'Favorite'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleLinkAction(String action, LinkEntry link) {
-    switch (action) {
-      case 'open':
-        _openLink(link.url);
-        break;
-      case 'copy':
-        Clipboard.setData(ClipboardData(text: link.url));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('URL copied to clipboard'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        break;
-      case 'favorite':
-        // Toggling favorite from popup menu for: ${link.title}
-        Provider.of<DataProvider>(context, listen: false).toggleLinkFavorite(link);
-        break;
-      case 'edit':
-        showDialog(
-          context: context,
-          builder: (context) => AddEditLinkDialog(linkToEdit: link),
-        );
-        break;
-      case 'delete':
-        _showDeleteConfirmation(link);
-        break;
-    }
-  }
-
-  void _showDeleteConfirmation(LinkEntry link) {
-    final isDarkMode = context.read<ThemeProvider>().isDarkMode;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Delete Link',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete "${link.title}"? This action cannot be undone.',
-          style: TextStyle(
-            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Provider.of<DataProvider>(context, listen: false).deleteLink(link);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Link deleted'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
   Future<void> _openLink(String url) async {
@@ -397,283 +588,127 @@ class _LinksScreenState extends State<LinksScreen>
         await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Could not open the link'),
-              backgroundColor: Colors.red,
-            ),
+          AppHelpers.showSnackBar(
+            context,
+            'Cannot open this link',
+            backgroundColor: ModernColors.error,
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error opening link: $e'),
-            backgroundColor: Colors.red,
-          ),
+        AppHelpers.showSnackBar(
+          context,
+          'Error opening link',
+          backgroundColor: ModernColors.error,
         );
       }
     }
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    
-    return '${months[dateTime.month - 1]} ${dateTime.day}, ${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  Future<void> _toggleFavorite(LinkEntry link) async {
+    final dataProvider = context.read<DataProvider>();
+    await dataProvider.toggleLinkFavorite(link);
   }
-}
 
-// Optimized widget that isolates expensive rebuilds
-class _OptimizedLinksBody extends StatelessWidget {
-  final TextEditingController searchController;
-  final String selectedCategory;
-  final bool isSearchVisible;
-  final Function(String) onCategorySelected;
-  final VoidCallback onSearchToggled;
-  final VoidCallback onAddLinkPressed;
-  final Function(LinkEntry) onLinkTap;
-  final Function(String, LinkEntry) onLinkAction;
-  final bool isDarkMode;
+  Future<void> _deleteLink(LinkEntry link) async {
+    final confirmed = await AppHelpers.showConfirmDialog(
+      context,
+      'Delete Link',
+      'Are you sure you want to delete "${link.title}"? This action cannot be undone.',
+      confirmText: 'Delete',
+    );
 
-  const _OptimizedLinksBody({
-    required this.searchController,
-    required this.selectedCategory,
-    required this.isSearchVisible,
-    required this.onCategorySelected,
-    required this.onSearchToggled,
-    required this.onAddLinkPressed,
-    required this.onLinkTap,
-    required this.onLinkAction,
-    required this.isDarkMode,
-  });
+    if (confirmed) {
+      final dataProvider = context.read<DataProvider>();
+      await dataProvider.deleteLink(link);
 
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<DataProvider>(
-      builder: (context, dataProvider, child) {
-        final links = dataProvider.links;
-        final categories = dataProvider.linkCategories;
-
-        return CustomScrollView(
-          slivers: [
-            _OptimizedAppBar(
-              isDarkMode: isDarkMode,
-              linkCount: links.length,
-              isSearchVisible: isSearchVisible,
-              onSearchToggled: onSearchToggled,
-            ),
-            if (isSearchVisible)
-              SliverToBoxAdapter(
-                child: LinkSearchField(
-                  controller: searchController,
-                  isDarkMode: isDarkMode,
-                  onChanged: (query) {
-                    dataProvider.setSearchQuery(query);
-                  },
-                  onClear: () {
-                    dataProvider.setSearchQuery('');
-                  },
-                ),
-              ),
-            SliverToBoxAdapter(
-              child: LinkCategoryFilter(
-                categories: categories,
-                selectedCategory: selectedCategory,
-                isDarkMode: isDarkMode,
-                onCategorySelected: onCategorySelected,
-              ),
-            ),
-            if (links.isEmpty)
-              SliverFillRemaining(
-                child: LinkEmptyState(
-                  isDarkMode: isDarkMode,
-                  onAddPressed: onAddLinkPressed,
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.all(20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final link = links[index];
-                      return LinkCard(
-                        link: link,
-                        onTap: () => onLinkTap(link),
-                        onAction: onLinkAction,
-                      );
-                    },
-                    childCount: links.length,
-                  ),
-                ),
-              ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 100), // FAB padding
-            ),
-          ],
+      if (mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          'Link deleted',
+          backgroundColor: ModernColors.error,
         );
-      },
-    );
-  }
-}
-
-// Optimized AppBar widget
-class _OptimizedAppBar extends StatelessWidget {
-  final bool isDarkMode;
-  final int linkCount;
-  final bool isSearchVisible;
-  final VoidCallback onSearchToggled;
-
-  const _OptimizedAppBar({
-    required this.isDarkMode,
-    required this.linkCount,
-    required this.isSearchVisible,
-    required this.onSearchToggled,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: true,
-      pinned: true,
-      backgroundColor: isDarkMode 
-          ? const Color(0xFF0F172A) 
-          : Theme.of(context).colorScheme.surface,
-      elevation: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Links',
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            if (linkCount > 0)
-              Text(
-                '$linkCount ${linkCount == 1 ? 'link' : 'links'}',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-          ],
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(
-            isSearchVisible ? Icons.search_off : Icons.search,
-            color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
-          ),
-          onPressed: onSearchToggled,
-        ),
-        if (linkCount > 0)
-          _ClearAllButton(isDarkMode: isDarkMode),
-      ],
-    );
-  }
-}
-
-// Optimized Clear All Button widget
-class _ClearAllButton extends StatelessWidget {
-  final bool isDarkMode;
-
-  const _ClearAllButton({required this.isDarkMode});
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
-      ),
-      onSelected: (value) {
-        if (value == 'clear_all') {
-          _showClearConfirmationDialog(context);
-        }
-      },
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 'clear_all',
-          child: Row(
-            children: [
-              Icon(Icons.clear_all, color: Colors.red),
-              SizedBox(width: 12),
-              Text('Clear All Links', style: TextStyle(color: Colors.red)),
-            ],
-          ),
-        ),
-      ],
-    );
+      }
+    }
   }
 
-  void _showClearConfirmationDialog(BuildContext context) {
-    final isDarkMode = context.read<ThemeProvider>().isDarkMode;
-    
+  void _handleLinkAction(String action, LinkEntry link) {
+    switch (action) {
+      case 'open':
+        _openLink(link.url);
+        break;
+      case 'edit':
+        _editLink(link);
+        break;
+      case 'delete':
+        _deleteLink(link);
+        break;
+      case 'favorite':
+        _toggleFavorite(link);
+        break;
+      case 'copy':
+        _copyLink(link.url);
+        break;
+      case 'share':
+        _shareLink(link);
+        break;
+      case 'sync':
+        _syncLinkToFirebase(link);
+        break;
+    }
+  }
+
+  void _editLink(LinkEntry link) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Clear All Links',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete all links? This action cannot be undone.',
-          style: TextStyle(
-            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              final dataProvider = Provider.of<DataProvider>(context, listen: false);
-              final links = List.from(dataProvider.allLinks);
-              for (final link in links) {
-                await dataProvider.deleteLink(link);
-              }
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('All links cleared'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Clear All'),
-          ),
-        ],
-      ),
+      builder: (context) => AddEditLinkDialog(linkToEdit: link),
     );
+  }
+
+  void _copyLink(String url) {
+    Clipboard.setData(ClipboardData(text: url));
+    AppHelpers.showSnackBar(
+      context,
+      'Link copied to clipboard',
+      backgroundColor: ModernColors.success,
+    );
+  }
+
+  void _shareLink(LinkEntry link) {
+    // Share functionality would go here
+    // For now, just copy to clipboard
+    _copyLink(link.url);
+  }
+
+  Future<void> _syncLinkToFirebase(LinkEntry link) async {
+    try {
+      final dataProvider = context.read<DataProvider>();
+      final success = await dataProvider.syncLinkToFirebase(link);
+      
+      if (mounted) {
+        if (success) {
+          AppHelpers.showSnackBar(
+            context,
+            'Link "${link.title}" synced to Firebase successfully',
+            backgroundColor: ModernColors.success,
+          );
+        } else {
+          AppHelpers.showSnackBar(
+            context,
+            'Failed to sync link to Firebase',
+            backgroundColor: ModernColors.error,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          'Sync error: ${e.toString()}',
+          backgroundColor: ModernColors.error,
+        );
+      }
+    }
   }
 }
