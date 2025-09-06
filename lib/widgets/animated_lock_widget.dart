@@ -84,7 +84,7 @@ class _AnimatedLockWidgetState extends State<AnimatedLockWidget>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: widget.color.withOpacity(0.3 * _glowAnimation.value),
+                        color: widget.color.withValues(alpha: 0.3 * _glowAnimation.value),
                         blurRadius: 20 * _glowAnimation.value,
                         spreadRadius: 5 * _glowAnimation.value,
                       ),
@@ -103,7 +103,7 @@ class _AnimatedLockWidgetState extends State<AnimatedLockWidget>
                     borderRadius: BorderRadius.circular(widget.size * 0.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -113,7 +113,7 @@ class _AnimatedLockWidgetState extends State<AnimatedLockWidget>
                     child: Container(
                       width: widget.size * 0.25,
                       height: widget.size * 0.25,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.black12,
                         shape: BoxShape.circle,
                       ),

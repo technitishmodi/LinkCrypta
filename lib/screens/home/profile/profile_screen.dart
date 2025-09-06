@@ -90,14 +90,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Sign Out',
           style: TextStyle(
             color: ModernColors.textDark,
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: Text(
+        content: const Text(
           'Are you sure you want to sign out? You\'ll need to sign in again to access your vault.',
           style: TextStyle(
             color: ModernColors.textLight,
@@ -106,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
+            child: const Text(
               'Cancel',
               style: TextStyle(color: ModernColors.textLight),
             ),
@@ -134,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: ModernColors.white,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Profile',
           style: TextStyle(
             color: ModernColors.textDark,
@@ -159,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   width: 60,
                   height: 60,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: ModernColors.primaryBlue,
                     shape: BoxShape.circle,
                   ),
@@ -170,14 +170,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
+                            errorBuilder: (context, error, stackTrace) => const Icon(
                               Icons.person_rounded,
                               color: ModernColors.white,
                               size: 30,
                             ),
                           ),
                         )
-                      : Icon(
+                      : const Icon(
                           Icons.person_rounded,
                           color: ModernColors.white,
                           size: 30,
@@ -190,7 +190,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         _currentUser?.displayName ?? 'LinkCrypta User',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: ModernColors.textDark,
@@ -199,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 4),
                       Text(
                         _currentUser?.email ?? 'Secure Password Manager',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           color: ModernColors.textLight,
                         ),
@@ -209,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -232,7 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
           
           // Settings Section
-          Text(
+          const Text(
             'Settings',
             style: TextStyle(
               fontSize: 16,
@@ -298,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
           
           // Account Section
-          Text(
+          const Text(
             'Account',
             style: TextStyle(
               fontSize: 16,
@@ -323,7 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
           
           // About Section
-          Text(
+          const Text(
             'About',
             style: TextStyle(
               fontSize: 16,
@@ -379,7 +379,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
           
           // Developer Section
-          Text(
+          const Text(
             'Developer',
             style: TextStyle(
               fontSize: 16,
@@ -416,14 +416,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: _isLoading ? null : _handleLogout,
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red,
-                side: BorderSide(color: Colors.red),
+                side: const BorderSide(color: Colors.red),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: _isLoading
-                  ? SizedBox(
+                  ? const SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
@@ -433,7 +433,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     )
                   : Text(
                       _currentUser != null ? 'Sign Out' : 'Not Signed In',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -467,7 +467,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: ModernColors.primaryBlue.withOpacity(0.1),
+            color: ModernColors.primaryBlue.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -478,7 +478,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: ModernColors.textDark,
@@ -486,12 +486,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             color: ModernColors.textLight,
           ),
         ),
-        trailing: Icon(
+        trailing: const Icon(
           Icons.chevron_right_rounded,
           color: ModernColors.textLight,
         ),
@@ -505,14 +505,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Reset Onboarding',
           style: TextStyle(
             color: ModernColors.textDark,
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: Text(
+        content: const Text(
           'This will show the onboarding screens again when you restart the app. Are you sure?',
           style: TextStyle(
             color: ModernColors.textLight,
@@ -521,7 +521,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
+            child: const Text(
               'Cancel',
               style: TextStyle(color: ModernColors.textLight),
             ),
@@ -597,21 +597,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             color: ModernColors.textDark,
             fontWeight: FontWeight.w600,
           ),
         ),
         content: Text(
           message,
-          style: TextStyle(
+          style: const TextStyle(
             color: ModernColors.textLight,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
+            child: const Text(
               'Cancel',
               style: TextStyle(color: ModernColors.textLight),
             ),

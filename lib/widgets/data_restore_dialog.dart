@@ -8,11 +8,11 @@ class DataRestoreDialog extends StatefulWidget {
   final VoidCallback onRestoreComplete;
 
   const DataRestoreDialog({
-    Key? key,
+    super.key,
     required this.userEmail,
     required this.backupSummary,
     required this.onRestoreComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<DataRestoreDialog> createState() => _DataRestoreDialogState();
@@ -83,10 +83,10 @@ class _DataRestoreDialogState extends State<DataRestoreDialog> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppConstants.primaryColor.withOpacity(0.1),
+              color: AppConstants.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppConstants.primaryColor.withOpacity(0.3),
+                color: AppConstants.primaryColor.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -95,7 +95,7 @@ class _DataRestoreDialogState extends State<DataRestoreDialog> {
               children: [
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.email,
                       size: 18,
                       color: AppConstants.primaryColor,

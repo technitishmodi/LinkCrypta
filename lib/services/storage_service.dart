@@ -39,7 +39,8 @@ class StorageService {
       _linkBox = Hive.box<LinkEntry>(_linkBoxName);
     }
 
-    print('StorageService: Initialized with ${_passwordBox.length} passwords and ${_linkBox.length} links');
+    // Initialize storage service successfully
+    // Loaded ${_passwordBox.length} passwords and ${_linkBox.length} links
   }
 
   // Password Management
@@ -133,20 +134,20 @@ class StorageService {
     );
 
     await _linkBox.add(entry);
-    print('StorageService: Added link ${entry.title} with ID ${entry.id}');
+    // Link added successfully
     return entry;
   }
 
   static Future<void> updateLink(LinkEntry entry) async {
-    print('StorageService: Updating link ${entry.title} (ID: ${entry.id}), favorite: ${entry.isFavorite}');
+    // Updating link details
     entry.updatedAt = DateTime.now();
     await entry.save();
-    print('StorageService: Link saved successfully');
+    // Link saved successfully
     
     // Verify the save worked by reading it back
     final allLinks = getAllLinks();
-    final savedLink = allLinks.firstWhere((l) => l.id == entry.id, orElse: () => entry);
-    print('StorageService: Verification - saved link favorite status: ${savedLink.isFavorite}');
+    allLinks.firstWhere((l) => l.id == entry.id, orElse: () => entry);
+    // Verification completed
   }
 
   static Future<void> deleteLink(LinkEntry entry) async {
@@ -155,10 +156,6 @@ class StorageService {
 
   static List<LinkEntry> getAllLinks() {
     final links = _linkBox.values.toList();
-    print('StorageService: Getting all links: ${links.length} found');
-    for (final link in links) {
-      print('  - ${link.title} (ID: ${link.id}, favorite: ${link.isFavorite})');
-    }
     return links;
   }
 

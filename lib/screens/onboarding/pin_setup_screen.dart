@@ -128,10 +128,10 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.1),
+                              color: Colors.blue.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.lock_outline_rounded,
                               color: Colors.blue,
                               size: 24,
@@ -244,7 +244,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                       color: isDarkMode ? Colors.grey.shade800 : Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: Colors.blue.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -253,7 +253,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.fingerprint,
                               color: Colors.blue,
                               size: 24,

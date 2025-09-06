@@ -129,7 +129,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: _colorScheme['primary']!.withOpacity(0.3),
+                        color: _colorScheme['primary']!.withValues(alpha: 0.3),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -142,10 +142,10 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.lock_rounded,
                           color: Colors.white,
                           size: 36,
@@ -154,7 +154,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                       const SizedBox(height: 16),
                       Text(
                         widget.password.name,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -168,12 +168,12 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           widget.password.category,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                             fontSize: 12,
@@ -193,7 +193,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -206,7 +206,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                     boxShadow: [
                       if (!isDarkMode)
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -293,7 +293,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -389,7 +389,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
+          color: iconColor.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -401,7 +401,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
       title: Text(
         title,
         style: theme.textTheme.labelMedium?.copyWith(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),
       subtitle: isUrl
@@ -429,7 +429,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: _colorScheme['primary']!.withOpacity(0.1),
+          color: _colorScheme['primary']!.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -441,7 +441,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
       title: Text(
         'Password',
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),
       subtitle: Text(
@@ -454,7 +454,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
           IconButton(
             icon: Icon(
               _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               size: 20,
             ),
             onPressed: () {
@@ -467,7 +467,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
           IconButton(
             icon: Icon(
               Icons.copy_rounded,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               size: 20,
             ),
             onPressed: () async {
@@ -507,7 +507,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
     return SizedBox(
       width: fullWidth ? double.infinity : null,
       child: Material(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,

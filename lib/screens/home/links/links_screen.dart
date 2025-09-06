@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+
 import '../../../utils/constants.dart';
 import '../../../providers/data_provider.dart';
 import '../../../models/link_entry.dart';
-import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
-import 'package:flutter/services.dart';
+import 'widgets/link_card.dart';
+import 'widgets/link_empty_state.dart';
+import 'widgets/link_search_field.dart';
+import 'widgets/link_category_filter.dart';
+import 'widgets/add_edit_link_dialog.dart';
 
 class LinksScreen extends StatefulWidget {
   const LinksScreen({super.key});
@@ -16,7 +20,8 @@ class LinksScreen extends StatefulWidget {
   State<LinksScreen> createState() => _LinksScreenState();
 }
 
-class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStateMixin {
+class _LinksScreenState extends State<LinksScreen> 
+    with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
   bool _isSearchVisible = false;
@@ -59,930 +64,243 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           HapticFeedback.mediumImpact();
-          _showAddLinkDialog(context);
+          _showAddLinkDialog();
         },
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: isDarkMode ? 2 : 4,
         extendedPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: Icon(Icons.add_rounded, size: 24),
-        label: Text(
+        label: const Text(
           'Add Link',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        heroTag: 'add_link_fab',
+        icon: const Icon(Icons.add),
       ),
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        backgroundColor: isDarkMode 
-            ? const Color(0xFF1E293B) 
-            : colorScheme.surface,
-        elevation: 0,
-        centerTitle: false,
-        title: _isSearchVisible
-            ? _buildSearchField()
-            : FadeTransition(
-                opacity: _fadeAnimation,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.link_rounded,
-                      color: isDarkMode ? Colors.white : colorScheme.primary,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Links',
-                      style: AppConstants.titleLarge.copyWith(
-                        color: isDarkMode ? Colors.white : colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-        actions: [
-          if (!_isSearchVisible) ...[            
-            IconButton(
-              icon: Icon(
-                Icons.search_rounded,
-                color: isDarkMode ? Colors.white70 : colorScheme.primary,
-              ),
-              tooltip: 'Search links',
-              onPressed: () {
-                HapticFeedback.selectionClick();
-                setState(() => _isSearchVisible = true);
-              },
-              style: IconButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-                backgroundColor: isDarkMode 
-                    ? Colors.white.withOpacity(0.05) 
-                    : colorScheme.primaryContainer.withOpacity(0.3),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(width: 4),
-            IconButton(
-              icon: Icon(
-                Icons.add_rounded,
-                color: isDarkMode ? Colors.white70 : colorScheme.primary,
-              ),
-              tooltip: 'Add new link',
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                _showAddLinkDialog(context);
-              },
-              style: IconButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-                backgroundColor: isDarkMode 
-                    ? Colors.white.withOpacity(0.05) 
-                    : colorScheme.primaryContainer.withOpacity(0.3),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(width: 4),
-            IconButton(
-              icon: Icon(
-                Icons.refresh_rounded,
-                color: isDarkMode ? Colors.white70 : colorScheme.primary,
-              ),
-              tooltip: 'Refresh links',
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                context.read<DataProvider>().setSearchQuery('');
-                context.read<DataProvider>().setSelectedLinkCategory('All');
-                context.read<DataProvider>().loadData();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        Icon(Icons.refresh_rounded, color: colorScheme.onPrimaryContainer, size: 18),
-                        const SizedBox(width: 8),
-                        const Text('Links refreshed'),
-                      ],
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    backgroundColor: colorScheme.primaryContainer,
-                    duration: const Duration(seconds: 1),
-                  ),
-                );
-              },
-              style: IconButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-                backgroundColor: isDarkMode 
-                    ? Colors.white.withOpacity(0.05) 
-                    : colorScheme.primaryContainer.withOpacity(0.3),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(width: 4),
-            PopupMenuButton<String>(
-              icon: Icon(
-                Icons.more_vert_rounded,
-                color: isDarkMode ? Colors.white70 : colorScheme.primary,
-              ),
-              tooltip: 'More options',
-              onSelected: (value) {
-                if (value == 'clear') {
-                  HapticFeedback.mediumImpact();
-                  _showClearConfirmationDialog(context, isDarkMode, colorScheme);
-                }
-              },
-              position: PopupMenuPosition.under,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              color: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
-              elevation: 3,
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'clear',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_sweep_rounded, color: colorScheme.error, size: 20),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Clear all links', 
-                        style: TextStyle(
-                          color: colorScheme.error,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ] else ...[            
-            IconButton(
-              icon: Icon(
-                Icons.close_rounded,
-                color: isDarkMode ? Colors.white70 : colorScheme.primary,
-              ),
-              tooltip: 'Cancel search',
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                setState(() {
-                  _isSearchVisible = false;
-                  _searchController.clear();
-                });
-                context.read<DataProvider>().setSearchQuery('');
-              },
-              style: IconButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-                backgroundColor: isDarkMode 
-                    ? Colors.white.withOpacity(0.05) 
-                    : colorScheme.primaryContainer.withOpacity(0.3),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ],
-        ],
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: _OptimizedLinksBody(
+          searchController: _searchController,
+          selectedCategory: _selectedCategory,
+          isSearchVisible: _isSearchVisible,
+          onCategorySelected: (category) {
+            setState(() => _selectedCategory = category);
+            Provider.of<DataProvider>(context, listen: false).setSelectedLinkCategory(category);
+          },
+          onSearchToggled: () {
+            setState(() {
+              _isSearchVisible = !_isSearchVisible;
+              if (!_isSearchVisible) {
+                _searchController.clear();
+                Provider.of<DataProvider>(context, listen: false).setSearchQuery('');
+              }
+            });
+          },
+          onAddLinkPressed: _showAddLinkDialog,
+          onLinkTap: (link) => _showLinkDetails(link, isDarkMode),
+          onLinkAction: _handleLinkAction,
+          isDarkMode: isDarkMode,
+        ),
       ),
-             body: Consumer<DataProvider>(
-         builder: (context, dataProvider, child) {
-           final links = dataProvider.links;
-           print('Links screen: Building with ${links.length} filtered links');
-           print('Links screen: Search query: "${dataProvider.searchQuery}"');
-           print('Links screen: Selected category: "${dataProvider.selectedLinkCategory}"');
-           
-           if (links.isEmpty) {
-             return _buildEmptyState(context, isDarkMode);
-           }
+    );
+  }
 
-          return Column(
+  void _showAddLinkDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const AddEditLinkDialog(),
+    );
+  }
+
+  void _showLinkDetails(LinkEntry link, bool isDarkMode) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          decoration: BoxDecoration(
+            color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _buildCategoryFilter(dataProvider, isDarkMode),
-              Expanded(
-                child: _buildLinksList(links, isDarkMode),
-              ),
+              _buildDetailHeader(link, isDarkMode),
+              _buildDetailContent(link, isDarkMode),
+              _buildDetailActions(link, isDarkMode),
             ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSearchField() {
-    final theme = Theme.of(context);
-    final isDarkMode = context.read<ThemeProvider>().isDarkMode;
-    final colorScheme = theme.colorScheme;
-    
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.3) 
-            : colorScheme.surfaceContainerHighest.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDarkMode 
-              ? Colors.grey.shade700 
-              : colorScheme.outline.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: TextField(
-        controller: _searchController,
-        autofocus: true,
-        decoration: InputDecoration(
-          hintText: 'Search links...',
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          hintStyle: AppConstants.bodyMedium.copyWith(
-            color: isDarkMode ? Colors.grey.shade400 : colorScheme.onSurfaceVariant.withOpacity(0.7),
-          ),
-          prefixIcon: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(8),
-            child: Icon(
-              Icons.search_rounded,
-              color: isDarkMode ? Colors.grey.shade400 : colorScheme.primary.withOpacity(0.7),
-              size: 20,
-            ),
-          ),
-          suffixIcon: IconButton(
-            icon: Icon(
-              Icons.clear_rounded,
-              color: isDarkMode ? Colors.grey.shade400 : colorScheme.primary,
-              size: 20,
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              _searchController.clear();
-              context.read<DataProvider>().setSearchQuery('');
-              setState(() => _isSearchVisible = false);
-            },
-            tooltip: 'Clear search',
-            style: IconButton.styleFrom(
-              foregroundColor: colorScheme.primary,
-              backgroundColor: isDarkMode 
-                  ? Colors.grey.shade800.withOpacity(0.3) 
-                  : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
           ),
         ),
-        style: AppConstants.bodyLarge.copyWith(
-          color: isDarkMode ? Colors.white : colorScheme.onSurface,
-        ),
-        onChanged: (value) {
-          context.read<DataProvider>().setSearchQuery(value);
-        },
-        onSubmitted: (value) {
-          if (value.isNotEmpty) {
-            HapticFeedback.selectionClick();
-          }
-        },
       ),
     );
   }
 
-  Widget _buildCategoryFilter(DataProvider dataProvider, bool isDarkMode) {
-    final categories = dataProvider.linkCategories;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: 60,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDarkMode 
-            ? const Color(0xFF1E293B).withOpacity(0.7) 
-            : colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          if (!isDarkMode)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-        ],
-      ),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = _selectedCategory == category;
-          
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(
-                category,
-                style: TextStyle(
-                  color: isSelected 
-                    ? Colors.white 
-                    : (isDarkMode ? Colors.white70 : AppConstants.primaryColor),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-              ),
-              selected: isSelected,
-              showCheckmark: false,
-              onSelected: (selected) {
-                HapticFeedback.selectionClick();
-                setState(() => _selectedCategory = category);
-                dataProvider.setSelectedLinkCategory(category);
-              },
-              backgroundColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
-              selectedColor: AppConstants.primaryColor,
-              checkmarkColor: Colors.white,
-              side: BorderSide(
-                color: isSelected 
-                  ? AppConstants.primaryColor 
-                  : (isDarkMode ? Colors.grey.shade600 : Colors.grey.shade300),
-              ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              elevation: isSelected ? 1 : 0,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildLinksList(List<LinkEntry> links, bool isDarkMode) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: ListView.builder(
-        key: ValueKey<int>(links.length),
-        padding: const EdgeInsets.all(16),
-        itemCount: links.length,
-        itemBuilder: (context, index) {
-          final link = links[index];
-          return AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              final delay = index * 0.1;
-              final slideAnimation = Tween<Offset>(
-                begin: const Offset(0, 0.2),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: _animationController,
-                  curve: Interval(
-                    delay.clamp(0, 0.9),
-                    (delay + 0.4).clamp(0, 1.0),
-                    curve: Curves.easeOutQuart,
-                  ),
-                ),
-              );
-              
-              return FadeTransition(
-                opacity: Tween<double>(
-                  begin: 0.0,
-                  end: 1.0,
-                ).animate(
-                  CurvedAnimation(
-                    parent: _animationController,
-                    curve: Interval(
-                      delay.clamp(0, 0.9),
-                      (delay + 0.4).clamp(0, 1.0),
-                      curve: Curves.easeOut,
-                    ),
-                  ),
-                ),
-                child: SlideTransition(
-                  position: slideAnimation,
-                  child: child,
-                ),
-              );
-            },
-            child: _buildLinkCard(link, isDarkMode),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildLinkCard(LinkEntry link, bool isDarkMode) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
+  Widget _buildDetailHeader(LinkEntry link, bool isDarkMode) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-            spreadRadius: 1,
-          ),
-        ],
+        color: isDarkMode 
+            ? const Color(0xFF3B82F6).withOpacity(0.1)
+            : const Color(0xFF3B82F6).withOpacity(0.05),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () => _showLinkDetails(link, isDarkMode),
-          splashColor: AppConstants.primaryColor.withOpacity(0.1),
-          highlightColor: AppConstants.primaryColor.withOpacity(0.05),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.link,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppConstants.primaryColor.withOpacity(0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        AppConstants.iconLink,
-                        color: AppConstants.primaryColor,
-                        size: 26,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            link.title,
-                            style: AppConstants.titleMedium.copyWith(
-                              color: isDarkMode ? Colors.white : Colors.black87,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            link.description,
-                            style: AppConstants.bodyMedium.copyWith(
-                              color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return ScaleTransition(scale: animation, child: child);
-                        },
-                        child: Icon(
-                          link.isFavorite ? Icons.favorite : Icons.favorite_border,
-                          key: ValueKey<bool>(link.isFavorite),
-                          color: link.isFavorite
-                              ? AppConstants.warningColor
-                              : isDarkMode
-                                  ? Colors.white70
-                                  : Colors.grey.shade400,
-                          size: 24,
-                        ),
-                      ),
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        context.read<DataProvider>().toggleLinkFavorite(link);
-                      },
-                      tooltip: link.isFavorite ? 'Remove from favorites' : 'Add to favorites',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: AppConstants.primaryColor.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
                       child: Text(
-                        link.category,
-                        style: AppConstants.bodyMedium.copyWith(
-                          color: AppConstants.primaryColor,
-                          fontWeight: FontWeight.w600,
+                        link.title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
                         ),
                       ),
                     ),
-                    const Spacer(),
-                    IconButton(
-                      icon: Icon(
-                        Icons.open_in_new_rounded,
-                        color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
+                    if (link.isFavorite)
+                      const Icon(
+                        Icons.favorite,
+                        color: Colors.red,
                         size: 20,
                       ),
-                      onPressed: () => _openLink(link.url),
-                      tooltip: 'Open link',
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                      padding: EdgeInsets.zero,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.more_vert_rounded,
-                        color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        final RenderBox button = context.findRenderObject() as RenderBox;
-                        final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-                        final RelativeRect position = RelativeRect.fromRect(
-                          Rect.fromPoints(
-                            button.localToGlobal(Offset.zero, ancestor: overlay),
-                            button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
-                          ),
-                          Offset.zero & overlay.size,
-                        );
-                        
-                        showMenu<String>(
-                          context: context,
-                          position: position,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 8,
-                          color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-                          items: [
-                            PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(AppConstants.iconEdit, size: 20),
-                                  const SizedBox(width: 8),
-                                  const Text('Edit'),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(AppConstants.iconDelete, color: AppConstants.errorColor, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text('Delete', style: TextStyle(color: AppConstants.errorColor)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ).then((value) {
-                          if (value != null) {
-                            _handleLinkAction(value, link);
-                          }
-                        });
-                      },
-                      tooltip: 'More options',
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                      padding: EdgeInsets.zero,
-                    ),
                   ],
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  link.category,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, bool isDarkMode) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
-    return Center(
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: child,
-          );
-        },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: isDarkMode 
-                    ? colorScheme.primaryContainer.withOpacity(0.2) 
-                    : colorScheme.primaryContainer.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                AppConstants.iconLink,
-                size: 64,
-                color: isDarkMode ? Colors.white70 : colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No links yet',
-              style: AppConstants.headlineMedium.copyWith(
-                color: isDarkMode ? Colors.white : colorScheme.onSurface,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                'Save and organize your important links here for easy access',
-                style: AppConstants.bodyMedium.copyWith(
-                  color: isDarkMode ? Colors.white70 : colorScheme.onSurface.withOpacity(0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                _showAddLinkDialog(context);
-              },
-              icon: Icon(AppConstants.iconAdd),
-              label: const Text('Add Your First Link'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primaryContainer,
-                foregroundColor: colorScheme.onPrimaryContainer,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-            ),
+  Widget _buildDetailContent(LinkEntry link, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (link.description.isNotEmpty) ...[
+            _buildDetailSection('Description', link.description, isDarkMode),
+            const SizedBox(height: 20),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _showAddLinkDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
-    final urlController = TextEditingController();
-    String selectedCategory = 'General';
-    
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDarkMode = theme.brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        title: Text(
-          'Add New Link',
-          style: AppConstants.titleLarge.copyWith(
-            fontWeight: FontWeight.bold,
-            color: isDarkMode ? Colors.white : colorScheme.onSurface,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(
-                  labelText: 'Title',
-                  labelStyle: TextStyle(color: colorScheme.primary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.outline),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                  ),
-                  prefixIcon: Icon(Icons.title_rounded, color: colorScheme.primary),
-                  filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                  labelStyle: TextStyle(color: colorScheme.primary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.outline),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                  ),
-                  prefixIcon: Icon(Icons.description_rounded, color: colorScheme.primary),
-                  filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: urlController,
-                decoration: InputDecoration(
-                  labelText: 'URL',
-                  labelStyle: TextStyle(color: colorScheme.primary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.outline),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                  ),
-                  prefixIcon: Icon(Icons.link_rounded, color: colorScheme.primary),
-                  filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                decoration: InputDecoration(
-                  labelText: 'Category',
-                  labelStyle: TextStyle(color: colorScheme.primary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.outline),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                  ),
-                  prefixIcon: Icon(Icons.category_rounded, color: colorScheme.primary),
-                  filled: true,
-                  fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                ),
-                dropdownColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
-                items: AppConstants.defaultLinkCategories.map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(
-                      category,
-                      style: TextStyle(color: isDarkMode ? Colors.white : colorScheme.onSurface),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  HapticFeedback.selectionClick();
-                  selectedCategory = value ?? 'General';
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: colorScheme.primary,
-            ),
-            child: Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          FilledButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              if (titleController.text.isNotEmpty && urlController.text.isNotEmpty) {
-                context.read<DataProvider>().addLink(
-                  title: titleController.text,
-                  description: descriptionController.text,
-                  url: urlController.text,
-                  category: selectedCategory,
-                );
-                Navigator.pop(context);
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Link added successfully'),
-                    backgroundColor: colorScheme.primaryContainer,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              } else {
-                // Show error if fields are empty
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Title and URL are required'),
-                    backgroundColor: colorScheme.errorContainer,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Add', style: TextStyle(fontWeight: FontWeight.w600)),
+          _buildDetailSection('URL', link.url, isDarkMode, isUrl: true),
+          const SizedBox(height: 20),
+          _buildDetailSection(
+            'Created', 
+            _formatDateTime(link.createdAt), 
+            isDarkMode,
           ),
         ],
       ),
     );
   }
 
-     void _handleLinkAction(String action, LinkEntry link) {
-     switch (action) {
-       case 'favorite':
-         print('Toggling favorite from popup menu for: ${link.title}');
-         context.read<DataProvider>().toggleLinkFavorite(link);
-         break;
-       case 'edit':
-         _showEditLinkDialog(context, link);
-         break;
-       case 'delete':
-         _showDeleteConfirmation(link);
-         break;
-     }
-   }
-
-  void _showDeleteConfirmation(LinkEntry link) {
-    final theme = Theme.of(context);
-    final isDarkMode = context.read<ThemeProvider>().isDarkMode;
-    final colorScheme = theme.colorScheme;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Delete Link',
-          style: AppConstants.titleMedium.copyWith(
-            color: isDarkMode ? Colors.white : colorScheme.primary,
-            fontWeight: FontWeight.bold,
+  Widget _buildDetailSection(String title, String content, bool isDarkMode, {bool isUrl = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
           ),
         ),
-        content: Text(
-          'Are you sure you want to delete "${link.title}"?',
-          style: AppConstants.bodyMedium.copyWith(
-            color: isDarkMode ? Colors.white70 : colorScheme.onSurface,
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: isDarkMode 
+                ? Border.all(color: const Color(0xFF4B5563))
+                : null,
+          ),
+          child: Text(
+            content,
+            style: TextStyle(
+              fontSize: 14,
+              color: isUrl 
+                  ? const Color(0xFF3B82F6)
+                  : isDarkMode ? Colors.white : const Color(0xFF1E293B),
+              fontFamily: isUrl ? 'monospace' : null,
+            ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: isDarkMode ? Colors.white70 : colorScheme.onSurface.withOpacity(0.7),
-            ),
-            child: Text(
-              'Cancel',
-              style: AppConstants.labelLarge,
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              context.read<DataProvider>().deleteLink(link);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '"${link.title}" deleted',
-                    style: TextStyle(color: colorScheme.onErrorContainer),
-                  ),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  backgroundColor: colorScheme.errorContainer,
-                  duration: const Duration(seconds: 2),
+      ],
+    );
+  }
+
+  Widget _buildDetailActions(LinkEntry link, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              onPressed: () => _openLink(link.url),
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Open Link'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              );
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: colorScheme.error,
+              ),
             ),
-            child: Text(
-              'Delete',
-              style: AppConstants.labelLarge,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // Toggling favorite from details view for: ${link.title}
+                Provider.of<DataProvider>(context, listen: false)
+                    .toggleLinkFavorite(link);
+                Navigator.of(context).pop();
+              },
+              icon: Icon(link.isFavorite ? Icons.favorite_border : Icons.favorite),
+              label: Text(link.isFavorite ? 'Unfavorite' : 'Favorite'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
             ),
           ),
         ],
@@ -990,670 +308,99 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
     );
   }
 
-  void _showClearConfirmationDialog(BuildContext context, bool isDarkMode, ColorScheme colorScheme) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Clear All Links',
-          style: AppConstants.titleMedium.copyWith(
-            color: isDarkMode ? Colors.white : colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete all links? This action cannot be undone.',
-          style: AppConstants.bodyMedium.copyWith(
-            color: isDarkMode ? Colors.white70 : colorScheme.onSurface,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: isDarkMode ? Colors.white70 : colorScheme.onSurface.withOpacity(0.7),
-            ),
-            child: Text(
-              'Cancel',
-              style: AppConstants.labelLarge,
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              HapticFeedback.mediumImpact();
-              await StorageService.clearAllData();
-              context.read<DataProvider>().loadData();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'All links cleared',
-                    style: TextStyle(color: colorScheme.onErrorContainer),
-                  ),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  backgroundColor: colorScheme.errorContainer,
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: colorScheme.error,
-            ),
-            child: Text(
-              'Clear All',
-              style: AppConstants.labelLarge,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-     void _showLinkDetails(LinkEntry link, bool isDarkMode) {
-     final theme = Theme.of(context);
-     final colorScheme = theme.colorScheme;
-     
-     showModalBottomSheet(
-       context: context,
-       isScrollControlled: true,
-       backgroundColor: Colors.transparent,
-       builder: (context) => Container(
-         height: MediaQuery.of(context).size.height * 0.7,
-         decoration: BoxDecoration(
-           color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-           boxShadow: [
-             BoxShadow(
-               color: Colors.black.withOpacity(0.2),
-               blurRadius: 10,
-               spreadRadius: 0,
-             ),
-           ],
-         ),
-         child: Column(
-           children: [
-             Container(
-               width: 40,
-               height: 4,
-               margin: const EdgeInsets.symmetric(vertical: 12),
-               decoration: BoxDecoration(
-                 color: isDarkMode ? Colors.white24 : Colors.grey.shade300,
-                 borderRadius: BorderRadius.circular(2),
-               ),
-             ),
-             Expanded(
-               child: SingleChildScrollView(
-                 padding: const EdgeInsets.all(20),
-                 child: Column(
-                   crossAxisAlignment: CrossAxisAlignment.start,
-                   children: [
-                     Row(
-                       children: [
-                         Container(
-                           width: 60,
-                           height: 60,
-                           decoration: BoxDecoration(
-                             color: AppConstants.primaryColor.withOpacity(0.15),
-                             borderRadius: BorderRadius.circular(16),
-                             boxShadow: [
-                               BoxShadow(
-                                 color: AppConstants.primaryColor.withOpacity(0.1),
-                                 blurRadius: 8,
-                                 offset: const Offset(0, 2),
-                               ),
-                             ],
-                           ),
-                           child: Icon(
-                             AppConstants.iconLink,
-                             color: AppConstants.primaryColor,
-                             size: 30,
-                           ),
-                         ),
-                         const SizedBox(width: 16),
-                         Expanded(
-                           child: Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                               Text(
-                                 link.title,
-                                 style: AppConstants.titleLarge.copyWith(
-                                   color: isDarkMode ? Colors.white : colorScheme.onSurface,
-                                   fontWeight: FontWeight.bold,
-                                 ),
-                               ),
-                               const SizedBox(height: 4),
-                               Container(
-                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                 decoration: BoxDecoration(
-                                   color: AppConstants.primaryColor.withOpacity(0.15),
-                                   borderRadius: BorderRadius.circular(20),
-                                   border: Border.all(
-                                     color: AppConstants.primaryColor.withOpacity(0.3),
-                                     width: 1,
-                                   ),
-                                 ),
-                                 child: Text(
-                                   link.category,
-                                   style: AppConstants.bodyMedium.copyWith(
-                                     color: AppConstants.primaryColor,
-                                     fontWeight: FontWeight.w600,
-                                   ),
-                                 ),
-                               ),
-                             ],
-                           ),
-                         ),
-                                                   IconButton(
-                            onPressed: () {
-                              print('Toggling favorite from details view for: ${link.title}');
-                              context.read<DataProvider>().toggleLinkFavorite(link);
-                              Navigator.pop(context);
-                            },
-                           icon: Icon(
-                             link.isFavorite ? Icons.favorite : Icons.favorite_border,
-                             color: link.isFavorite ? AppConstants.warningColor : Colors.grey,
-                             size: 28,
-                           ),
-                         ),
-                       ],
-                     ),
-                     const SizedBox(height: 24),
-                     _buildDetailSection(
-                       'Description',
-                       link.description.isNotEmpty ? link.description : 'No description',
-                       isDarkMode,
-                     ),
-                     const SizedBox(height: 20),
-                     _buildDetailSection(
-                       'URL',
-                       link.url,
-                       isDarkMode,
-                       isUrl: true,
-                     ),
-                     const SizedBox(height: 20),
-                     _buildDetailSection(
-                       'Created',
-                       _formatDate(link.createdAt),
-                       isDarkMode,
-                     ),
-                     const SizedBox(height: 20),
-                     _buildDetailSection(
-                       'Last Updated',
-                       _formatDate(link.updatedAt),
-                       isDarkMode,
-                     ),
-                     const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              Navigator.pop(context);
-                              _showEditLinkDialog(context, link);
-                            },
-                            icon: const Icon(Icons.edit_rounded),
-                            label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w600)),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: colorScheme.primary,
-                              foregroundColor: colorScheme.onPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              Navigator.pop(context);
-                              _openLink(link.url);
-                            },
-                            icon: const Icon(Icons.open_in_new_rounded),
-                            label: const Text('Open', style: TextStyle(fontWeight: FontWeight.w600)),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: colorScheme.secondaryContainer,
-                              foregroundColor: colorScheme.onSecondaryContainer,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () async {
-                          HapticFeedback.mediumImpact();
-                          Navigator.pop(context);
-                          await _syncLinkToFirebase(link);
-                        },
-                        icon: const Icon(Icons.cloud_upload_rounded),
-                        label: const Text('Sync to Firebase', style: TextStyle(fontWeight: FontWeight.w600)),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.green.shade600,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-                    ),
-                   ],
-                 ),
-               ),
-             ),
-           ],
-         ),
-       ),
-     );
-   }
-
-   Widget _buildDetailSection(String title, String content, bool isDarkMode, {bool isUrl = false}) {
-     final theme = Theme.of(context);
-     final colorScheme = theme.colorScheme;
-     
-     return Column(
-       crossAxisAlignment: CrossAxisAlignment.start,
-       children: [
-         Text(
-           title,
-           style: AppConstants.labelLarge.copyWith(
-             color: isDarkMode ? Colors.white70 : colorScheme.onSurface.withOpacity(0.7),
-             fontWeight: FontWeight.w600,
-           ),
-         ),
-         const SizedBox(height: 8),
-         Container(
-           width: double.infinity,
-           padding: const EdgeInsets.all(16),
-           decoration: BoxDecoration(
-             color: isDarkMode ? const Color(0xFF2A3749) : colorScheme.surfaceContainerHighest.withOpacity(0.5),
-             borderRadius: BorderRadius.circular(16),
-             border: Border.all(
-               color: isDarkMode ? Colors.grey.shade700 : colorScheme.outline.withOpacity(0.3),
-               width: 1.5,
-             ),
-             boxShadow: [
-               if (!isDarkMode)
-                 BoxShadow(
-                   color: Colors.black.withOpacity(0.03),
-                   blurRadius: 4,
-                   offset: const Offset(0, 2),
-                 ),
-             ],
-           ),
-           child: isUrl
-               ? InkWell(
-                   onTap: () {
-                     HapticFeedback.lightImpact();
-                     _openLink(content);
-                   },
-                   borderRadius: BorderRadius.circular(12),
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 4),
-                     child: Row(
-                       children: [
-                         Icon(
-                           Icons.link_rounded,
-                           size: 18,
-                           color: colorScheme.primary,
-                         ),
-                         const SizedBox(width: 8),
-                         Expanded(
-                           child: Text(
-                             content,
-                             style: AppConstants.bodyLarge.copyWith(
-                               color: colorScheme.primary,
-                               fontWeight: FontWeight.w500,
-                             ),
-                           ),
-                         ),
-                         Container(
-                           padding: const EdgeInsets.all(6),
-                           decoration: BoxDecoration(
-                             color: colorScheme.primary.withOpacity(0.1),
-                             borderRadius: BorderRadius.circular(8),
-                           ),
-                           child: Icon(
-                             Icons.open_in_new_rounded,
-                             size: 16,
-                             color: colorScheme.primary,
-                           ),
-                         ),
-                       ],
-                     ),
-                   ),
-                 )
-               : Text(
-                   content,
-                   style: AppConstants.bodyLarge.copyWith(
-                     color: isDarkMode ? Colors.white : colorScheme.onSurface,
-                   ),
-                 ),
-         ),
-       ],
-     );
-   }
-
-   String _formatDate(DateTime date) {
-     return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-   }
-
-   void _showEditLinkDialog(BuildContext context, LinkEntry link) {
-     final titleController = TextEditingController(text: link.title);
-     final descriptionController = TextEditingController(text: link.description);
-     final urlController = TextEditingController(text: link.url);
-     String selectedCategory = link.category;
-     
-     final theme = Theme.of(context);
-     final colorScheme = theme.colorScheme;
-     final isDarkMode = theme.brightness == Brightness.dark;
-
-     showDialog(
-       context: context,
-       builder: (context) => AlertDialog(
-         backgroundColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
-         surfaceTintColor: Colors.transparent,
-         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-         title: Text(
-           'Edit Link',
-           style: AppConstants.titleLarge.copyWith(
-             fontWeight: FontWeight.bold,
-             color: isDarkMode ? Colors.white : colorScheme.onSurface,
-           ),
-         ),
-         content: SingleChildScrollView(
-           child: Column(
-             mainAxisSize: MainAxisSize.min,
-             children: [
-               TextField(
-                 controller: titleController,
-                 decoration: InputDecoration(
-                   labelText: 'Title',
-                   labelStyle: TextStyle(color: colorScheme.primary),
-                   border: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.outline),
-                   ),
-                   focusedBorder: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                   ),
-                   prefixIcon: Icon(Icons.title_rounded, color: colorScheme.primary),
-                   filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                 ),
-               ),
-               const SizedBox(height: 16),
-               TextField(
-                 controller: descriptionController,
-                 decoration: InputDecoration(
-                   labelText: 'Description',
-                   labelStyle: TextStyle(color: colorScheme.primary),
-                   border: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.outline),
-                   ),
-                   focusedBorder: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                   ),
-                   prefixIcon: Icon(Icons.description_rounded, color: colorScheme.primary),
-                   filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                 ),
-                 maxLines: 3,
-               ),
-               const SizedBox(height: 16),
-               TextField(
-                 controller: urlController,
-                 decoration: InputDecoration(
-                   labelText: 'URL',
-                   labelStyle: TextStyle(color: colorScheme.primary),
-                   border: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.outline),
-                   ),
-                   focusedBorder: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                   ),
-                   prefixIcon: Icon(Icons.link_rounded, color: colorScheme.primary),
-                   filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                 ),
-               ),
-               const SizedBox(height: 16),
-               DropdownButtonFormField<String>(
-                 value: selectedCategory,
-                 decoration: InputDecoration(
-                   labelText: 'Category',
-                   labelStyle: TextStyle(color: colorScheme.primary),
-                   border: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.outline),
-                   ),
-                   focusedBorder: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(16),
-                     borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                   ),
-                   prefixIcon: Icon(Icons.category_rounded, color: colorScheme.primary),
-                   filled: true,
-                   fillColor: isDarkMode ? Colors.white.withOpacity(0.05) : colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                 ),
-                 dropdownColor: isDarkMode ? const Color(0xFF1E293B) : colorScheme.surface,
-                 items: AppConstants.defaultLinkCategories.map((category) {
-                   return DropdownMenuItem(
-                     value: category,
-                     child: Text(
-                       category,
-                       style: TextStyle(color: isDarkMode ? Colors.white : colorScheme.onSurface),
-                     ),
-                   );
-                 }).toList(),
-                 onChanged: (value) {
-                   HapticFeedback.selectionClick();
-                   selectedCategory = value ?? 'General';
-                 },
-               ),
-             ],
-           ),
-         ),
-         actions: [
-           TextButton(
-             onPressed: () {
-               HapticFeedback.lightImpact();
-               Navigator.pop(context);
-             },
-             style: TextButton.styleFrom(
-               foregroundColor: colorScheme.primary,
-             ),
-             child: Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
-           ),
-           FilledButton(
-             onPressed: () {
-               HapticFeedback.mediumImpact();
-               if (titleController.text.isNotEmpty && urlController.text.isNotEmpty) {
-                 final updatedLink = link.copyWith(
-                   title: titleController.text,
-                   description: descriptionController.text,
-                   url: urlController.text,
-                   category: selectedCategory,
-                   updatedAt: DateTime.now(),
-                 );
-                 context.read<DataProvider>().updateLink(updatedLink);
-                 Navigator.pop(context);
-                 
-                 ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(
-                     content: const Text('Link updated successfully'),
-                     backgroundColor: colorScheme.primaryContainer,
-                     behavior: SnackBarBehavior.floating,
-                   ),
-                 );
-               } else {
-                 // Show error if fields are empty
-                 ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(
-                     content: const Text('Title and URL are required'),
-                     backgroundColor: colorScheme.errorContainer,
-                     behavior: SnackBarBehavior.floating,
-                   ),
-                 );
-               }
-             },
-             style: FilledButton.styleFrom(
-               backgroundColor: colorScheme.primary,
-               foregroundColor: colorScheme.onPrimary,
-               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-             ),
-             child: const Text('Update', style: TextStyle(fontWeight: FontWeight.w600)),
-           ),
-         ],
-       ),
-     );
-   }
-
-   void _openLink(String url) async {
-     final theme = Theme.of(context);
-     final colorScheme = theme.colorScheme;
-     
-     // Add http:// prefix if missing
-     String launchUrl = url;
-     if (!launchUrl.startsWith('http://') && !launchUrl.startsWith('https://')) {
-       launchUrl = 'https://$launchUrl';
-     }
-     
-     try {
-       HapticFeedback.mediumImpact();
-       final canLaunch = await url_launcher.canLaunchUrl(Uri.parse(launchUrl));
-       
-       if (canLaunch) {
-         await url_launcher.launchUrl(Uri.parse(launchUrl), mode: url_launcher.LaunchMode.externalApplication);
-         
-         // Show success message
-         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-               content: Text('Opening: $launchUrl'),
-               backgroundColor: colorScheme.primaryContainer,
-               behavior: SnackBarBehavior.floating,
-               action: SnackBarAction(
-                 label: 'Copy URL',
-                 textColor: colorScheme.primary,
-                 onPressed: () {
-                   Clipboard.setData(ClipboardData(text: launchUrl));
-                   ScaffoldMessenger.of(context).showSnackBar(
-                     SnackBar(
-                       content: const Text('URL copied to clipboard'),
-                       backgroundColor: colorScheme.secondaryContainer,
-                       behavior: SnackBarBehavior.floating,
-                     ),
-                   );
-                 },
-               ),
-             ),
-           );
-         }
-       } else {
-         // Show error message if URL can't be launched
-         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-               content: Text('Could not open URL: $launchUrl'),
-               backgroundColor: colorScheme.errorContainer,
-               behavior: SnackBarBehavior.floating,
-             ),
-           );
-         }
-       }
-     } catch (e) {
-       // Show error message if there's an exception
-       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-             content: Text('Error opening URL: ${e.toString()}'),
-             backgroundColor: colorScheme.errorContainer,
-             behavior: SnackBarBehavior.floating,
-           ),
-         );
-       }
-     }
-  }
-
-  /// Sync link to Firebase when user clicks "Sync to Firebase"
-  Future<void> _syncLinkToFirebase(LinkEntry link) async {
-    // Check if user is authenticated
-    if (FirebaseAuth.instance.currentUser == null) {
-      if (mounted) {
+  void _handleLinkAction(String action, LinkEntry link) {
+    switch (action) {
+      case 'open':
+        _openLink(link.url);
+        break;
+      case 'copy':
+        Clipboard.setData(ClipboardData(text: link.url));
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please sign in to sync with Firebase'),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-      return;
-    }
-
-    try {
-      // Show loading indicator
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Syncing link to Firebase...'),
-              ],
-            ),
-            backgroundColor: Colors.blue,
-            behavior: SnackBarBehavior.floating,
+            content: Text('URL copied to clipboard'),
             duration: Duration(seconds: 2),
           ),
         );
-      }
+        break;
+      case 'favorite':
+        // Toggling favorite from popup menu for: ${link.title}
+        Provider.of<DataProvider>(context, listen: false).toggleLinkFavorite(link);
+        break;
+      case 'edit':
+        showDialog(
+          context: context,
+          builder: (context) => AddEditLinkDialog(linkToEdit: link),
+        );
+        break;
+      case 'delete':
+        _showDeleteConfirmation(link);
+        break;
+    }
+  }
 
-      // Use the DataProvider's sync method
-      final dataProvider = context.read<DataProvider>();
-      final success = await dataProvider.syncLinkToFirebase(link);
-
-      if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Link synced to Firebase successfully!'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
+  void _showDeleteConfirmation(LinkEntry link) {
+    final isDarkMode = context.read<ThemeProvider>().isDarkMode;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Delete Link',
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${link.title}"? This action cannot be undone.',
+          style: TextStyle(
+            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
             ),
-          );
-        } else {
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Provider.of<DataProvider>(context, listen: false).deleteLink(link);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Link deleted'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openLink(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await url_launcher.canLaunchUrl(uri)) {
+        await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Failed to sync link to Firebase'),
+              content: Text('Could not open the link'),
               backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -1662,12 +409,271 @@ class _LinksScreenState extends State<LinksScreen> with SingleTickerProviderStat
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sync error: ${e.toString()}'),
+            content: Text('Error opening link: $e'),
             backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     }
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    return '${months[dateTime.month - 1]} ${dateTime.day}, ${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+// Optimized widget that isolates expensive rebuilds
+class _OptimizedLinksBody extends StatelessWidget {
+  final TextEditingController searchController;
+  final String selectedCategory;
+  final bool isSearchVisible;
+  final Function(String) onCategorySelected;
+  final VoidCallback onSearchToggled;
+  final VoidCallback onAddLinkPressed;
+  final Function(LinkEntry) onLinkTap;
+  final Function(String, LinkEntry) onLinkAction;
+  final bool isDarkMode;
+
+  const _OptimizedLinksBody({
+    required this.searchController,
+    required this.selectedCategory,
+    required this.isSearchVisible,
+    required this.onCategorySelected,
+    required this.onSearchToggled,
+    required this.onAddLinkPressed,
+    required this.onLinkTap,
+    required this.onLinkAction,
+    required this.isDarkMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DataProvider>(
+      builder: (context, dataProvider, child) {
+        final links = dataProvider.links;
+        final categories = dataProvider.linkCategories;
+
+        return CustomScrollView(
+          slivers: [
+            _OptimizedAppBar(
+              isDarkMode: isDarkMode,
+              linkCount: links.length,
+              isSearchVisible: isSearchVisible,
+              onSearchToggled: onSearchToggled,
+            ),
+            if (isSearchVisible)
+              SliverToBoxAdapter(
+                child: LinkSearchField(
+                  controller: searchController,
+                  isDarkMode: isDarkMode,
+                  onChanged: (query) {
+                    dataProvider.setSearchQuery(query);
+                  },
+                  onClear: () {
+                    dataProvider.setSearchQuery('');
+                  },
+                ),
+              ),
+            SliverToBoxAdapter(
+              child: LinkCategoryFilter(
+                categories: categories,
+                selectedCategory: selectedCategory,
+                isDarkMode: isDarkMode,
+                onCategorySelected: onCategorySelected,
+              ),
+            ),
+            if (links.isEmpty)
+              SliverFillRemaining(
+                child: LinkEmptyState(
+                  isDarkMode: isDarkMode,
+                  onAddPressed: onAddLinkPressed,
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.all(20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final link = links[index];
+                      return LinkCard(
+                        link: link,
+                        onTap: () => onLinkTap(link),
+                        onAction: onLinkAction,
+                      );
+                    },
+                    childCount: links.length,
+                  ),
+                ),
+              ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 100), // FAB padding
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// Optimized AppBar widget
+class _OptimizedAppBar extends StatelessWidget {
+  final bool isDarkMode;
+  final int linkCount;
+  final bool isSearchVisible;
+  final VoidCallback onSearchToggled;
+
+  const _OptimizedAppBar({
+    required this.isDarkMode,
+    required this.linkCount,
+    required this.isSearchVisible,
+    required this.onSearchToggled,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 120,
+      floating: true,
+      pinned: true,
+      backgroundColor: isDarkMode 
+          ? const Color(0xFF0F172A) 
+          : Theme.of(context).colorScheme.surface,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Links',
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            if (linkCount > 0)
+              Text(
+                '$linkCount ${linkCount == 1 ? 'link' : 'links'}',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            isSearchVisible ? Icons.search_off : Icons.search,
+            color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
+          ),
+          onPressed: onSearchToggled,
+        ),
+        if (linkCount > 0)
+          _ClearAllButton(isDarkMode: isDarkMode),
+      ],
+    );
+  }
+}
+
+// Optimized Clear All Button widget
+class _ClearAllButton extends StatelessWidget {
+  final bool isDarkMode;
+
+  const _ClearAllButton({required this.isDarkMode});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.more_vert,
+        color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
+      ),
+      onSelected: (value) {
+        if (value == 'clear_all') {
+          _showClearConfirmationDialog(context);
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'clear_all',
+          child: Row(
+            children: [
+              Icon(Icons.clear_all, color: Colors.red),
+              SizedBox(width: 12),
+              Text('Clear All Links', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showClearConfirmationDialog(BuildContext context) {
+    final isDarkMode = context.read<ThemeProvider>().isDarkMode;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Clear All Links',
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : const Color(0xFF1E293B),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete all links? This action cannot be undone.',
+          style: TextStyle(
+            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              final dataProvider = Provider.of<DataProvider>(context, listen: false);
+              final links = List.from(dataProvider.allLinks);
+              for (final link in links) {
+                await dataProvider.deleteLink(link);
+              }
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('All links cleared'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Clear All'),
+          ),
+        ],
+      ),
+    );
   }
 }

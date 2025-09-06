@@ -42,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       icon: Icons.lock_rounded,
       imageUrl:
           'https://images.unsplash.com/photo-1639762681057-408e52192e55?q=80&w=2232&auto=format&fit=crop',
-      gradientColors: [Color(0xFF4361EE), Color(0xFF3A0CA3)],
+      gradientColors: [const Color(0xFF4361EE), const Color(0xFF3A0CA3)],
     ),
     OnboardingPage(
       title: 'Local & Encrypted',
@@ -52,7 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       icon: Icons.security_rounded,
       imageUrl:
           'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
-      gradientColors: [Color(0xFF3A0CA3), Color(0xFF7209B7)],
+      gradientColors: [const Color(0xFF3A0CA3), const Color(0xFF7209B7)],
     ),
     OnboardingPage(
       title: 'Fast Access',
@@ -62,7 +62,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       icon: Icons.copy_rounded,
       imageUrl:
           'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2070&auto=format&fit=crop',
-      gradientColors: [Color(0xFF7209B7), Color(0xFF4361EE)],
+      gradientColors: [const Color(0xFF7209B7), const Color(0xFF4361EE)],
     ),
     OnboardingPage(
       title: 'Ready to secure',
@@ -72,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       icon: Icons.check_circle_rounded,
       imageUrl:
           'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop',
-      gradientColors: [Color(0xFF4361EE), Color(0xFF7209B7)],
+      gradientColors: [const Color(0xFF4361EE), const Color(0xFF7209B7)],
     ),
   ];
 
@@ -132,7 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
+                  color: Colors.white.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: const Text(
@@ -176,7 +176,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     height: 8,
                     decoration: BoxDecoration(
                       color:
-                          active ? Colors.white : Colors.white.withOpacity(0.35),
+                          active ? Colors.white : Colors.white.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(12),
                     ),
                   );
@@ -269,8 +269,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.black.withOpacity(0.08),
-                Colors.black.withOpacity(0.6),
+                Colors.black.withValues(alpha: 0.08),
+                Colors.black.withValues(alpha: 0.6),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -307,7 +307,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 page.subtitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.94),
+                  color: Colors.white.withValues(alpha: 0.94),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -318,7 +318,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   page.description,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 15,
                     height: 1.45,
                     fontWeight: FontWeight.w300,

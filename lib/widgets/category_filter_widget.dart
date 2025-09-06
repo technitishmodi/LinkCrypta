@@ -33,7 +33,7 @@ class CategoryFilterWidget extends StatelessWidget {
               selected: isSelected,
               onSelected: (_) => onCategoryChanged(category),
               backgroundColor: Theme.of(context).colorScheme.surface,
-              selectedColor: AppConstants.primaryColor.withOpacity(0.2),
+              selectedColor: AppConstants.primaryColor.withValues(alpha: 0.2),
               labelStyle: TextStyle(
                 color: isSelected
                     ? AppConstants.primaryColor
@@ -42,7 +42,7 @@ class CategoryFilterWidget extends StatelessWidget {
               side: BorderSide(
                 color: isSelected
                     ? AppConstants.primaryColor
-                    : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
           );

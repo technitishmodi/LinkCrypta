@@ -230,7 +230,7 @@ class _AuthMethodDialog extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.security_rounded,
                   color: Colors.blue,
                   size: 20,
@@ -298,7 +298,7 @@ class _PINDialogState extends State<_PINDialog> {
     final isDarkMode = theme.brightness == Brightness.dark;
     
     return AlertDialog(
-      title: Text('Authentication Required'),
+      title: const Text('Authentication Required'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +311,7 @@ class _PINDialogState extends State<_PINDialog> {
             ),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.lock_outline_rounded,
                   color: Colors.blue,
                   size: 20,

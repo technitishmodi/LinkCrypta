@@ -107,7 +107,7 @@ class _SmartAutoFillScreenState extends State<SmartAutoFillScreen> with SingleTi
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.link, color: Colors.blue),
@@ -196,7 +196,7 @@ class _SmartAutoFillScreenState extends State<SmartAutoFillScreen> with SingleTi
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.check_circle, color: Colors.green),
@@ -231,7 +231,7 @@ class _SmartAutoFillScreenState extends State<SmartAutoFillScreen> with SingleTi
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
-        backgroundColor: _getConfidenceColor(match.confidence).withOpacity(0.1),
+        backgroundColor: _getConfidenceColor(match.confidence).withValues(alpha: 0.1),
         child: Icon(
           _getConfidenceIcon(match.confidence),
           color: _getConfidenceColor(match.confidence),
@@ -251,7 +251,7 @@ class _SmartAutoFillScreenState extends State<SmartAutoFillScreen> with SingleTi
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _getConfidenceColor(match.confidence).withOpacity(0.1),
+                  color: _getConfidenceColor(match.confidence).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -305,7 +305,7 @@ class _SmartAutoFillScreenState extends State<SmartAutoFillScreen> with SingleTi
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.1),
+                        color: Colors.purple.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.history, color: Colors.purple),

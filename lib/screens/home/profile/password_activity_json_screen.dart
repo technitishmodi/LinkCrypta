@@ -139,7 +139,7 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
           // Download JSON
           IconButton(
             icon: const Icon(Icons.download),
-            tooltip: "Download JSON",
+            tooltip: 'Download JSON',
             onPressed: _downloadJsonToFile,
           ),
         ],
@@ -397,29 +397,29 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
       var status = await Permission.storage.request();
       if (!status.isGranted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Storage permission denied")),
+          const SnackBar(content: Text('Storage permission denied')),
         );
         return;
       }
 
       Directory? directory;
       if (Platform.isAndroid) {
-        directory = Directory("/storage/emulated/0/Download");
+        directory = Directory('/storage/emulated/0/Download');
       } else {
         directory = await getApplicationDocumentsDirectory();
       }
 
-      final path = "${directory.path}/password_logs.json";
+      final path = '${directory.path}/password_logs.json';
       final file = File(path);
 
       await file.writeAsString(jsonString);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Saved to $path")),
+        SnackBar(content: Text('Saved to $path')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error saving file: $e")),
+        SnackBar(content: Text('Error saving file: $e')),
       );
     }
   }

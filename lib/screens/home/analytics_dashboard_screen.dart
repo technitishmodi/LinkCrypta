@@ -203,13 +203,13 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
 
   Widget _buildInsightsSection(AnalyticsSummary summary) {
     if (summary.insights.isEmpty) {
-      return Card(
+      return const Card(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Row(
             children: [
               Icon(Icons.check_circle, color: Colors.green),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text('No security issues found! Your vault is in great shape.'),
             ],
           ),
@@ -401,7 +401,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
               height: 200,
               child: LineChart(
                 LineChartData(
-                  gridData: FlGridData(show: true),
+                  gridData: const FlGridData(show: true),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
@@ -440,10 +440,10 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                       isCurved: true,
                       color: Colors.blue,
                       barWidth: 3,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withValues(alpha: 0.1),
                       ),
                     ),
                   ],

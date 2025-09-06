@@ -159,13 +159,13 @@ class LinkCryptaApp extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.radiusM),
-          borderSide: BorderSide(color: AppConstants.primaryColor, width: 2),
+          borderSide: const BorderSide(color: AppConstants.primaryColor, width: 2),
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
         elevation: 4,
         backgroundColor: AppConstants.primaryColor,
         foregroundColor: Colors.white,
@@ -221,13 +221,13 @@ class LinkCryptaApp extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.radiusM),
-          borderSide: BorderSide(color: AppConstants.primaryColor, width: 2),
+          borderSide: const BorderSide(color: AppConstants.primaryColor, width: 2),
         ),
         filled: true,
         fillColor: Colors.grey.shade900,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
         elevation: 4,
         backgroundColor: AppConstants.primaryColor,
         foregroundColor: Colors.white,

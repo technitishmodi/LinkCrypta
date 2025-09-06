@@ -10,7 +10,7 @@ class TermsOfServiceScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Terms of Service',
           style: TextStyle(
             color: Color(0xFF212121),
@@ -20,7 +20,7 @@ class TermsOfServiceScreen extends StatelessWidget {
         ),
         centerTitle: false,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_rounded,
             color: Color(0xFF212121),
           ),
@@ -36,7 +36,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Color(0xFFE3F2FD),
+                color: const Color(0xFFE3F2FD),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -44,18 +44,18 @@ class TermsOfServiceScreen extends StatelessWidget {
                   Container(
                     width: 60,
                     height: 60,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Color(0xFF2196F3),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.description_rounded,
                       color: Colors.white,
                       size: 30,
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -67,7 +67,7 @@ class TermsOfServiceScreen extends StatelessWidget {
                             color: Color(0xFF212121),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           'Last updated: June 2023',
                           style: TextStyle(
@@ -141,7 +141,7 @@ class TermsOfServiceScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12, top: 24),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: Color(0xFF212121),
@@ -155,7 +155,7 @@ class TermsOfServiceScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           height: 1.5,
           color: Color(0xFF212121),
@@ -170,7 +170,7 @@ class TermsOfServiceScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '•',
             style: TextStyle(
               fontSize: 16,
@@ -182,7 +182,7 @@ class TermsOfServiceScreen extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 height: 1.5,
                 color: Color(0xFF212121),

@@ -25,7 +25,7 @@ class ActivityLogService {
       _activityLogBox = Hive.box<PasswordActivityLog>(_activityLogBoxName);
     }
     
-    print('ActivityLogService: Initialized with ${_activityLogBox.length} logs');
+    // ActivityLogService initialized with ${_activityLogBox.length} logs
   }
   
   // Log password viewed

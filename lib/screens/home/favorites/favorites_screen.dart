@@ -107,15 +107,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
     return Consumer<DataProvider>(
       builder: (context, dataProvider, child) {
         final favoriteLinks = dataProvider.favoriteLinks;
-        final allLinks = dataProvider.links;
-        print('Favorites screen - building links tab with ${favoriteLinks.length} favorite links');
-        print('Total filtered links in data provider: ${dataProvider.links.length}');
-        print('Total unfiltered links in data provider: ${allLinks.length}');
-        print('All unfiltered links in data provider:');
-        for (final link in allLinks) {
-          print('  - ${link.title} (favorite: ${link.isFavorite})');
-        }
-        
         if (favoriteLinks.isEmpty) {
           return _buildEmptyState(
             'No Favorite Links',
@@ -145,7 +136,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -157,10 +148,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AppConstants.primaryColor.withOpacity(0.1),
+            color: AppConstants.primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
+          child: const Icon(
             AppConstants.iconLink,
             color: AppConstants.primaryColor,
             size: 24,
@@ -190,7 +181,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppConstants.primaryColor.withOpacity(0.1),
+                    color: AppConstants.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -202,7 +193,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
                   ),
                 ),
                 const Spacer(),
-                Icon(
+                const Icon(
                   AppConstants.iconFavorite,
                   color: AppConstants.warningColor,
                   size: 20,
@@ -218,7 +209,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
           ),
           onSelected: (value) => _handleLinkAction(value, link),
           itemBuilder: (context) => [
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'favorite',
               child: Row(
                 children: [
@@ -227,17 +218,17 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
                     color: AppConstants.warningColor,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
-                  const Text('Remove from favorites'),
+                  SizedBox(width: 8),
+                  Text('Remove from favorites'),
                 ],
               ),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'delete',
               child: Row(
                 children: [
                   Icon(AppConstants.iconDelete, color: AppConstants.errorColor, size: 20),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text('Delete', style: TextStyle(color: AppConstants.errorColor)),
                 ],
               ),
@@ -258,7 +249,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppConstants.primaryColor.withOpacity(0.1),
+              color: AppConstants.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(60),
             ),
             child: Icon(
@@ -290,7 +281,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
      void _handleLinkAction(String action, LinkEntry link) {
      switch (action) {
        case 'favorite':
-         print('Toggling favorite from favorites screen for: ${link.title}');
+         // Toggling favorite from favorites screen for: ${link.title}
          context.read<DataProvider>().toggleLinkFavorite(link);
          break;
        case 'delete':

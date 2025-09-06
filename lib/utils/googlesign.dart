@@ -17,7 +17,7 @@ class GoogleSignInService {
         ],
       );
       
-      print('GoogleSignInService initialized successfully');
+      // GoogleSignInService initialized successfully
     } catch (e) {
       print('GoogleSignInService initialization failed: $e');
       rethrow;

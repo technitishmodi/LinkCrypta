@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 
 import '../models/password_entry.dart';
 import '../models/link_entry.dart';
@@ -19,8 +20,37 @@ class DataProvider extends ChangeNotifier {
   String _selectedCategory = 'All';
   String _selectedLinkCategory = 'All';
 
-  List<PasswordEntry> get passwords => _getFilteredPasswords();
-  List<LinkEntry> get links => _getFilteredLinks();
+  // Performance optimization: Add caching
+  List<PasswordEntry>? _cachedFilteredPasswords;
+  List<LinkEntry>? _cachedFilteredLinks;
+  List<String>? _cachedPasswordCategories;
+  List<String>? _cachedLinkCategories;
+  
+  // Cache validity flags
+  bool _passwordFilterCacheValid = false;
+  bool _linkFilterCacheValid = false;
+  bool _passwordCategoryCacheValid = false;
+  bool _linkCategoryCacheValid = false;
+  
+  // Debounce timer for search
+  Timer? _debounceTimer;
+
+  // Cached getters for performance
+  List<PasswordEntry> get passwords {
+    if (!_passwordFilterCacheValid || _cachedFilteredPasswords == null) {
+      _cachedFilteredPasswords = _getFilteredPasswords();
+      _passwordFilterCacheValid = true;
+    }
+    return _cachedFilteredPasswords!;
+  }
+
+  List<LinkEntry> get links {
+    if (!_linkFilterCacheValid || _cachedFilteredLinks == null) {
+      _cachedFilteredLinks = _getFilteredLinks();
+      _linkFilterCacheValid = true;
+    }
+    return _cachedFilteredLinks!;
+  }
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get searchQuery => _searchQuery;
@@ -37,42 +67,97 @@ class DataProvider extends ChangeNotifier {
       _links.where((l) => l.isBookmarked).toList();
 
   List<String> get passwordCategories {
-    final categories = _passwords.map((p) => p.category).toSet().toList();
-    categories.sort();
-    return ['All', ...categories];
+    if (!_passwordCategoryCacheValid || _cachedPasswordCategories == null) {
+      final categories = _passwords.map((p) => p.category).toSet().toList();
+      categories.sort();
+      _cachedPasswordCategories = ['All', ...categories];
+      _passwordCategoryCacheValid = true;
+    }
+    return _cachedPasswordCategories!;
   }
 
   List<String> get linkCategories {
-    final categories = _links.map((l) => l.category).toSet().toList();
-    categories.sort();
-    return ['All', ...categories];
+    if (!_linkCategoryCacheValid || _cachedLinkCategories == null) {
+      final categories = _links.map((l) => l.category).toSet().toList();
+      categories.sort();
+      _cachedLinkCategories = ['All', ...categories];
+      _linkCategoryCacheValid = true;
+    }
+    return _cachedLinkCategories!;
   }
 
   void setSearchQuery(String query) {
+    if (_searchQuery == query) return; // Avoid unnecessary updates
+    
     _searchQuery = query;
-    notifyListeners();
+    _invalidateFilterCaches();
+    
+    // Debounce to reduce frequent updates during typing
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 200), () {
+      notifyListeners();
+    });
   }
 
   void setSelectedCategory(String category) {
+    if (_selectedCategory == category) return; // Avoid unnecessary updates
+    
     _selectedCategory = category;
+    _passwordFilterCacheValid = false;
     notifyListeners();
   }
 
   void setSelectedPasswordCategory(String category) {
+    if (_selectedCategory == category) return; // Avoid unnecessary updates
+    
     _selectedCategory = category;
+    _passwordFilterCacheValid = false;
     notifyListeners();
   }
 
   void setSelectedLinkCategory(String category) {
+    if (_selectedLinkCategory == category) return; // Avoid unnecessary updates
+    
     _selectedLinkCategory = category;
+    _linkFilterCacheValid = false;
     notifyListeners();
   }
 
   void clearFilters() {
-    _searchQuery = '';
-    _selectedCategory = 'All';
-    _selectedLinkCategory = 'All';
-    notifyListeners();
+    bool hasChanges = false;
+    
+    if (_searchQuery.isNotEmpty) {
+      _searchQuery = '';
+      hasChanges = true;
+    }
+    
+    if (_selectedCategory != 'All') {
+      _selectedCategory = 'All';
+      hasChanges = true;
+    }
+    
+    if (_selectedLinkCategory != 'All') {
+      _selectedLinkCategory = 'All';
+      hasChanges = true;
+    }
+    
+    if (hasChanges) {
+      _invalidateFilterCaches();
+      notifyListeners();
+    }
+  }
+
+  // Cache invalidation methods
+  void _invalidateFilterCaches() {
+    _passwordFilterCacheValid = false;
+    _linkFilterCacheValid = false;
+  }
+
+  void _invalidateAllCaches() {
+    _passwordFilterCacheValid = false;
+    _linkFilterCacheValid = false;
+    _passwordCategoryCacheValid = false;
+    _linkCategoryCacheValid = false;
   }
 
   List<LinkEntry> get allLinks => _links;
@@ -81,24 +166,19 @@ class DataProvider extends ChangeNotifier {
   List<PasswordEntry> _getFilteredPasswords() {
     List<PasswordEntry> filtered = _passwords;
 
-    // Filter by category
+    // Filter by category first (faster)
     if (_selectedCategory != 'All') {
-      filtered = filtered
-          .where((p) => p.category == _selectedCategory)
-          .toList();
+      filtered = filtered.where((p) => p.category == _selectedCategory).toList();
     }
 
-    // Filter by search query
+    // Optimize search filtering
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
-      filtered = filtered
-          .where(
-            (p) =>
-                p.name.toLowerCase().contains(query) ||
-                p.username.toLowerCase().contains(query) ||
-                p.url.toLowerCase().contains(query),
-          )
-          .toList();
+      filtered = filtered.where((p) {
+        // Pre-compute combined search text once per item
+        final searchText = '${p.name} ${p.username} ${p.url}'.toLowerCase();
+        return searchText.contains(query);
+      }).toList();
     }
 
     return filtered;
@@ -107,24 +187,19 @@ class DataProvider extends ChangeNotifier {
   List<LinkEntry> _getFilteredLinks() {
     List<LinkEntry> filtered = _links;
 
-    // Filter by category
+    // Filter by category first (faster)
     if (_selectedLinkCategory != 'All') {
-      filtered = filtered
-          .where((l) => l.category == _selectedLinkCategory)
-          .toList();
+      filtered = filtered.where((l) => l.category == _selectedLinkCategory).toList();
     }
 
-    // Filter by search query
+    // Optimize search filtering
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
-      filtered = filtered
-          .where(
-            (l) =>
-                l.title.toLowerCase().contains(query) ||
-                l.description.toLowerCase().contains(query) ||
-                l.url.toLowerCase().contains(query),
-          )
-          .toList();
+      filtered = filtered.where((l) {
+        // Pre-compute combined search text once per item
+        final searchText = '${l.title} ${l.description} ${l.url}'.toLowerCase();
+        return searchText.contains(query);
+      }).toList();
     }
 
     return filtered;
@@ -137,6 +212,7 @@ class DataProvider extends ChangeNotifier {
     try {
       _passwords = StorageService.getAllPasswords();
       _links = StorageService.getAllLinks();
+      _invalidateAllCaches(); // Invalidate all caches when data reloads
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -171,6 +247,8 @@ class DataProvider extends ChangeNotifier {
       // Log the password creation activity
       await ActivityLogService.logPasswordCreated(entry);
       
+      // Invalidate caches when data changes
+      _invalidateAllCaches();
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -216,6 +294,7 @@ class DataProvider extends ChangeNotifier {
       
       await StorageService.deletePassword(entry);
       _passwords.removeWhere((p) => p.id == entry.id);
+      _invalidateAllCaches(); // Invalidate caches when data changes
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -270,6 +349,7 @@ class DataProvider extends ChangeNotifier {
         category: category,
       );
       _links.add(entry);
+      _invalidateAllCaches(); // Invalidate caches when data changes
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -303,6 +383,7 @@ class DataProvider extends ChangeNotifier {
     try {
       await StorageService.deleteLink(entry);
       _links.removeWhere((l) => l.id == entry.id);
+      _invalidateAllCaches(); // Invalidate caches when data changes
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -463,7 +544,7 @@ class DataProvider extends ChangeNotifier {
     try {
       final success = await SyncService.syncPasswordToFirebase(password);
       if (success) {
-        print('DataProvider: Password "${password.name}" synced to Firebase');
+        // Password synced to Firebase
       }
       return success;
     } catch (e) {
@@ -482,7 +563,7 @@ class DataProvider extends ChangeNotifier {
     try {
       final success = await SyncService.syncLinkToFirebase(link);
       if (success) {
-        print('DataProvider: Link "${link.title}" synced to Firebase');
+        // Link synced to Firebase
       }
       return success;
     } catch (e) {
@@ -501,7 +582,7 @@ class DataProvider extends ChangeNotifier {
     try {
       final success = await SyncService.syncAllToFirebase();
       if (success) {
-        print('DataProvider: All data synced to Firebase');
+        // All data synced to Firebase
       }
       notifyListeners();
       return success;
@@ -523,7 +604,7 @@ class DataProvider extends ChangeNotifier {
       if (success) {
         // Reload local data after sync
         await loadData();
-        print('DataProvider: Data synced from Firebase');
+        // Data synced from Firebase
       }
       return success;
     } catch (e) {
@@ -541,11 +622,17 @@ class DataProvider extends ChangeNotifier {
 
   /// Get sync status information
   Future<Map<String, dynamic>> getSyncStatus() async {
-    return await SyncService.getSyncStatus();
+    return SyncService.getSyncStatus();
   }
 
   /// Get current user email for display
   String? getCurrentUserEmail() {
     return SyncService.getCurrentUserEmail();
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 }

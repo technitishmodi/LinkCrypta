@@ -149,7 +149,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -202,7 +202,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
             Text(
               'Test Google Sign-In integration with Firebase and Supabase',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -217,7 +217,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                   color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: theme.colorScheme.primary.withOpacity(0.3),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Column(
@@ -244,7 +244,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                               Text(
                                 'Signed in as:',
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onPrimaryContainer.withOpacity(0.7),
+                                  color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
                                 ),
                               ),
                               Text(
@@ -257,7 +257,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                               Text(
                                 _currentUser!['email'] ?? 'Unknown',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onPrimaryContainer.withOpacity(0.8),
+                                  color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
                                 ),
                               ),
                             ],
@@ -269,7 +269,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                     Text(
                       'User ID: ${_currentUser!['id']}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6),
+                        color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
                         fontFamily: 'monospace',
                       ),
                       textAlign: TextAlign.center,
@@ -296,7 +296,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -339,7 +339,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -367,7 +367,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
                         ? '✅ Google Sign-In is working correctly!'
                         : '⚠️ Not signed in yet - test the sign-in flow',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.8),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                     ),
                     textAlign: TextAlign.center,
                   ),

@@ -150,7 +150,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -183,16 +183,16 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
               child: Consumer<DataProvider>(
                 builder: (context, dataProvider, child) {
                   if (dataProvider.isLoading && dataProvider.passwords.isEmpty) {
-                    return Center(
+                    return const Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 20),
-                          const CircularProgressIndicator(
+                          SizedBox(height: 20),
+                          CircularProgressIndicator(
                             color: ModernColors.primary,
                             strokeWidth: 3,
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Text(
                             'Loading passwords...',
                             style: TextStyle(
@@ -278,7 +278,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: ModernColors.primary.withOpacity(0.1),
+                  color: ModernColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

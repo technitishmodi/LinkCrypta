@@ -170,7 +170,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                       Text(
                         'Fill in the details for your new secure password',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -288,12 +288,12 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -313,7 +313,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       ),
@@ -333,12 +333,12 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       decoration: InputDecoration(
         labelText: 'Password',
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -358,7 +358,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
         suffixIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
@@ -368,7 +368,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
               IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 onPressed: () {
                   setState(() {
@@ -380,7 +380,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
               Container(
                 height: 24,
                 width: 1,
-                color: theme.colorScheme.outline.withOpacity(0.3),
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
               const SizedBox(width: 4),
               IconButton(
@@ -414,12 +414,12 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       decoration: InputDecoration(
         labelText: 'Category',
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -439,7 +439,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
       ),
       dropdownColor: isDarkMode ? Colors.grey.shade900 : Colors.white,
@@ -471,12 +471,12 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       decoration: InputDecoration(
         labelText: 'Notes (optional)',
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -496,7 +496,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
         alignLabelWithHint: true,
       ),

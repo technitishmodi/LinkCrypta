@@ -11,7 +11,7 @@ class AboutScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'About LinkCrypta',
           style: TextStyle(
             color: Color(0xFF212121),
@@ -21,7 +21,7 @@ class AboutScreen extends StatelessWidget {
         ),
         centerTitle: false,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_rounded,
             color: Color(0xFF212121),
           ),
@@ -41,17 +41,17 @@ class AboutScreen extends StatelessWidget {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Color(0xFF2196F3),
+                      color: const Color(0xFF2196F3),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.lock_rounded,
                       color: Colors.white,
                       size: 60,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'LinkCrypta',
                     style: TextStyle(
                       fontSize: 24,
@@ -60,7 +60,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'Version 1.0.0',
                     style: TextStyle(
                       fontSize: 16,
@@ -68,7 +68,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  const Text(
                     'Build 2023.06.01',
                     style: TextStyle(
                       fontSize: 14,
@@ -109,7 +109,7 @@ class AboutScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Color(0xFFF5F5F5),
+                color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -118,11 +118,11 @@ class AboutScreen extends StatelessWidget {
                   Container(
                     width: 60,
                     height: 60,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Color(0xFF2196F3),
                       shape: BoxShape.circle,
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'JD',
                         style: TextStyle(
@@ -138,7 +138,7 @@ class AboutScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'John Doe',
                           style: TextStyle(
                             fontSize: 18,
@@ -147,7 +147,7 @@ class AboutScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
+                        const Text(
                           'Lead Developer',
                           style: TextStyle(
                             fontSize: 16,
@@ -156,7 +156,7 @@ class AboutScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
+                        const Text(
                           'Cybersecurity expert with over 10 years of experience in developing secure applications. Passionate about creating user-friendly solutions that don\'t compromise on security.',
                           style: TextStyle(
                             fontSize: 14,
@@ -234,7 +234,7 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 32),
             
             // Copyright
-            Center(
+            const Center(
               child: Text(
                 '© 2023 LinkCrypta. All rights reserved.',
                 style: TextStyle(
@@ -257,7 +257,7 @@ class AboutScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16, top: 8),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: Color(0xFF212121),
@@ -271,7 +271,7 @@ class AboutScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           height: 1.5,
           color: Color(0xFF212121),
@@ -286,7 +286,7 @@ class AboutScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle_rounded,
             color: Color(0xFF2196F3),
             size: 24,
@@ -298,7 +298,7 @@ class AboutScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF212121),
@@ -307,7 +307,7 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF757575),
                   ),
@@ -333,7 +333,7 @@ class AboutScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Color(0xFFF5F5F5),
+          color: const Color(0xFFF5F5F5),
           width: 1,
         ),
       ),
@@ -342,18 +342,18 @@ class AboutScreen extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Color(0xFF2196F3).withOpacity(0.1),
+            color: const Color(0xFF2196F3).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
             size: 20,
-            color: Color(0xFF2196F3),
+            color: const Color(0xFF2196F3),
           ),
         ),
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: Color(0xFF212121),
@@ -361,12 +361,12 @@ class AboutScreen extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             color: Color(0xFF757575),
           ),
         ),
-        trailing: Icon(
+        trailing: const Icon(
           Icons.chevron_right_rounded,
           color: Color(0xFF757575),
         ),
@@ -392,13 +392,13 @@ class AboutScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Color(0xFF2196F3).withOpacity(0.1),
+            color: const Color(0xFF2196F3).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
             size: 20,
-            color: Color(0xFF2196F3),
+            color: const Color(0xFF2196F3),
           ),
         ),
       ),

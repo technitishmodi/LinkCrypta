@@ -197,7 +197,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                       Text(
                         'Update your password details below',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -265,7 +265,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: _colors['primary']!.withOpacity(0.1),
+                    color: _colors['primary']!.withValues(alpha: 0.1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,12 +351,12 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -376,7 +376,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       ),
@@ -396,12 +396,12 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
       decoration: InputDecoration(
         labelText: 'Password',
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -421,7 +421,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
         suffixIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
@@ -431,7 +431,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
               IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 onPressed: () {
                   setState(() {
@@ -443,7 +443,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
               Container(
                 height: 24,
                 width: 1,
-                color: theme.colorScheme.outline.withOpacity(0.3),
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
               const SizedBox(width: 4),
               IconButton(
@@ -477,12 +477,12 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
       decoration: InputDecoration(
         labelText: 'Category',
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -502,7 +502,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
       ),
       dropdownColor: isDarkMode ? Colors.grey.shade900 : Colors.white,
@@ -534,12 +534,12 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
       decoration: InputDecoration(
         labelText: 'Notes (optional)',
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: Container(
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(10),
@@ -559,7 +559,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
         ),
         filled: true,
         fillColor: isDarkMode 
-            ? Colors.grey.shade800.withOpacity(0.5)
+            ? Colors.grey.shade800.withValues(alpha: 0.5)
             : Colors.white,
         alignLabelWithHint: true,
       ),

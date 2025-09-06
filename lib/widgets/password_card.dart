@@ -33,10 +33,10 @@ class PasswordCard extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: AppConstants.primaryColor.withOpacity(0.1),
+                  color: AppConstants.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppConstants.radiusM),
                 ),
-                child: Icon(
+                child: const Icon(
                   AppConstants.iconPassword,
                   color: AppConstants.primaryColor,
                   size: 24,
@@ -60,7 +60,7 @@ class PasswordCard extends StatelessWidget {
                           ),
                         ),
                         if (password.isFavorite)
-                          Icon(
+                          const Icon(
                             AppConstants.iconFavorite,
                             color: AppConstants.primaryColor,
                             size: 16,
@@ -71,7 +71,7 @@ class PasswordCard extends StatelessWidget {
                     Text(
                       password.username,
                       style: AppConstants.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -80,7 +80,7 @@ class PasswordCard extends StatelessWidget {
                     Text(
                       AppHelpers.getDomainFromUrl(password.url),
                       style: AppConstants.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -94,7 +94,7 @@ class PasswordCard extends StatelessWidget {
                             vertical: AppConstants.spacingXS,
                           ),
                           decoration: BoxDecoration(
-                            color: AppConstants.primaryColor.withOpacity(0.1),
+                            color: AppConstants.primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(AppConstants.radiusS),
                           ),
                           child: Text(
@@ -109,7 +109,7 @@ class PasswordCard extends StatelessWidget {
                         Text(
                           AppHelpers.formatDate(password.updatedAt),
                           style: AppConstants.bodyMedium.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                             fontSize: 12,
                           ),
                         ),
@@ -145,7 +145,7 @@ class PasswordCard extends StatelessWidget {
               // Arrow
               Icon(
                 Icons.chevron_right,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
               ),
             ],
           ),

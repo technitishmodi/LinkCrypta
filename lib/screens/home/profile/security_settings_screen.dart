@@ -142,7 +142,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
       appBar: AppBar(
         backgroundColor: ModernColors.white,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Security Settings',
           style: TextStyle(
             color: ModernColors.textDark,
@@ -152,7 +152,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         ),
         centerTitle: false,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_rounded,
             color: ModernColors.textDark,
           ),
@@ -176,18 +176,18 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                       Container(
                         width: 60,
                         height: 60,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: ModernColors.primaryBlue,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.security_rounded,
                           color: ModernColors.white,
                           size: 30,
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Expanded(
+                      const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -199,7 +199,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                                 color: ModernColors.textDark,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               'Manage your security preferences',
                               style: TextStyle(
@@ -224,11 +224,11 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                       color: ModernColors.lightBlue,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: ModernColors.primaryBlue.withOpacity(0.3),
+                        color: ModernColors.primaryBlue.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
-                    child: Column(
+                    child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -238,7 +238,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                               color: ModernColors.primaryBlue,
                               size: 20,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
                               'Biometric Authentication',
                               style: TextStyle(
@@ -249,7 +249,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
                           'Use your fingerprint or face recognition for faster and more secure access to your passwords.',
                           style: TextStyle(
@@ -264,7 +264,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                 const SizedBox(height: 24),
                 
                 // PIN Settings
-                Text(
+                const Text(
                   'PIN Settings',
                   style: TextStyle(
                     fontSize: 16,
@@ -283,7 +283,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   subtitle: _isPINSet
                       ? 'Your PIN is currently set'
                       : 'Set a PIN to protect your passwords',
-                  trailing: Icon(
+                  trailing: const Icon(
                     Icons.chevron_right_rounded,
                     color: ModernColors.textLight,
                   ),
@@ -321,7 +321,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                     icon: Icons.fingerprint_rounded,
                     title: 'Biometric Authentication',
                     subtitle: _getBiometricSubtitle(),
-                    trailing: Icon(
+                    trailing: const Icon(
                       Icons.chevron_right_rounded,
                       color: ModernColors.textLight,
                     ),
@@ -339,11 +339,11 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                     color: ModernColors.lightBlue,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: ModernColors.primaryBlue.withOpacity(0.3),
+                      color: ModernColors.primaryBlue.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
-                  child: Column(
+                  child: const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -353,7 +353,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                             color: ModernColors.primaryBlue,
                             size: 20,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Text(
                             'Security Information',
                             style: TextStyle(
@@ -364,7 +364,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         'Your passwords are encrypted using AES-256 encryption and stored securely on your device. Setting a PIN adds an additional layer of security.',
                         style: TextStyle(
@@ -450,7 +450,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: ModernColors.primaryBlue.withOpacity(0.1),
+            color: ModernColors.primaryBlue.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -461,7 +461,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         ),
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: ModernColors.textDark,
@@ -469,7 +469,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             color: ModernColors.textLight,
           ),

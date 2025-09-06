@@ -100,8 +100,6 @@ class ModernColors {
     onError: white,
     surface: white,
     onSurface: textDark,
-    background: backgroundLight,
-    onBackground: textDark,
   );
 
   static ColorScheme darkColorScheme = const ColorScheme(
@@ -114,7 +112,5 @@ class ModernColors {
     onError: Color(0xFF000000),
     surface: surfaceDark,
     onSurface: white,
-    background: backgroundDark,
-    onBackground: white,
   );
 }

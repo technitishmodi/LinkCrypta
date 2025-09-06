@@ -10,11 +10,11 @@ class SyncButton extends StatefulWidget {
   final VoidCallback? onSyncComplete;
 
   const SyncButton({
-    Key? key,
+    super.key,
     this.password,
     this.link,
     this.onSyncComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<SyncButton> createState() => _SyncButtonState();
@@ -113,11 +113,11 @@ class FullSyncButton extends StatefulWidget {
   final bool syncToFirebase; // true for upload, false for download
 
   const FullSyncButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.icon,
     required this.syncToFirebase,
-  }) : super(key: key);
+  });
 
   @override
   State<FullSyncButton> createState() => _FullSyncButtonState();
@@ -131,12 +131,12 @@ class _FullSyncButtonState extends State<FullSyncButton> {
     final dataProvider = Provider.of<DataProvider>(context);
     
     if (!dataProvider.canSyncWithFirebase()) {
-      return Card(
+      return const Card(
         child: ListTile(
-          leading: const Icon(Icons.cloud_off, color: Colors.grey),
-          title: const Text('Firebase Sync'),
-          subtitle: const Text('Sign in to enable cloud sync'),
-          trailing: const Icon(Icons.arrow_forward_ios),
+          leading: Icon(Icons.cloud_off, color: Colors.grey),
+          title: Text('Firebase Sync'),
+          subtitle: Text('Sign in to enable cloud sync'),
+          trailing: Icon(Icons.arrow_forward_ios),
         ),
       );
     }
@@ -211,7 +211,7 @@ class _FullSyncButtonState extends State<FullSyncButton> {
 }
 
 class SyncStatusWidget extends StatelessWidget {
-  const SyncStatusWidget({Key? key}) : super(key: key);
+  const SyncStatusWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

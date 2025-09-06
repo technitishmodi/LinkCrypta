@@ -326,13 +326,13 @@ class _PasswordHealthDashboardScreenState extends State<PasswordHealthDashboardS
         .toList();
 
     if (weakPasswords.isEmpty) {
-      return Card(
+      return const Card(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Row(
             children: [
               Icon(Icons.check_circle, color: Colors.green),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text('No weak passwords found! Great job!'),
             ],
           ),
@@ -348,7 +348,7 @@ class _PasswordHealthDashboardScreenState extends State<PasswordHealthDashboardS
           children: [
             Row(
               children: [
-                Icon(Icons.warning, color: Colors.orange),
+                const Icon(Icons.warning, color: Colors.orange),
                 const SizedBox(width: 8),
                 Text(
                   'Weak Passwords (${weakPasswords.length})',
@@ -375,13 +375,13 @@ class _PasswordHealthDashboardScreenState extends State<PasswordHealthDashboardS
         .toList();
 
     if (duplicatePasswords.isEmpty) {
-      return Card(
+      return const Card(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Row(
             children: [
               Icon(Icons.check_circle, color: Colors.green),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text('No duplicate passwords found!'),
             ],
           ),
@@ -397,7 +397,7 @@ class _PasswordHealthDashboardScreenState extends State<PasswordHealthDashboardS
           children: [
             Row(
               children: [
-                Icon(Icons.content_copy, color: Colors.red),
+                const Icon(Icons.content_copy, color: Colors.red),
                 const SizedBox(width: 8),
                 Text(
                   'Duplicate Passwords (${duplicatePasswords.length})',
@@ -424,13 +424,13 @@ class _PasswordHealthDashboardScreenState extends State<PasswordHealthDashboardS
         .toList();
 
     if (compromisedPasswords.isEmpty) {
-      return Card(
+      return const Card(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Row(
             children: [
               Icon(Icons.check_circle, color: Colors.green),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text('No compromised passwords found!'),
             ],
           ),

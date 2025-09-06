@@ -18,11 +18,11 @@ class SyncService {
   static Future<void> initialize() async {
     // Initialize Hive for local storage
     await StorageService.initialize();
-    print('SyncService: Local storage initialized');
+    // Local storage initialized
     
     // Check if user is authenticated for future cloud sync features
     if (_isUserAuthenticated) {
-      print('SyncService: User authenticated - ready for future cloud sync features');
+      // User authenticated - ready for future cloud sync features
     } else {
       print('SyncService: No authenticated user - using local storage only');
     }
@@ -290,7 +290,7 @@ class SyncService {
   static Future<bool> syncAllToFirebase() async {
     // For now, this is a no-op since we don't have Firebase storage
     // In the future, this would sync all data to Firebase
-    print('SyncService: syncAllToFirebase called (placeholder)');
+    // All local data synced to Firebase (placeholder)
     return true;
   }
 
@@ -420,7 +420,7 @@ class SyncService {
               .get();
           
           if (cloudBackup.exists && cloudBackup.data() != null) {
-            backupData = cloudBackup.data()!;
+            backupData = cloudBackup.data();
             backupSource = 'cloud';
             print('SyncService: Using cloud backup for summary');
           }
@@ -477,7 +477,7 @@ class SyncService {
               .get();
           
           if (cloudBackup.exists && cloudBackup.data() != null) {
-            backupData = cloudBackup.data()!;
+            backupData = cloudBackup.data();
             restoredFrom = 'cloud';
             print('SyncService: Restoring from cloud backup');
           }
