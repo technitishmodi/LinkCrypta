@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../models/password_entry.dart';
 import '../../../providers/data_provider.dart';
 import '../../../utils/app_helpers.dart';
-import '../../../utils/modern_colors.dart';
-import '../../../services/sync_service.dart';
 import '../../../services/auth_service.dart';
 import 'edit_password_screen.dart';
 

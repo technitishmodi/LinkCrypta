@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../../providers/data_provider.dart';
 import '../../../models/link_entry.dart';
 import '../../../utils/helpers.dart';
+import '../../../utils/responsive.dart';
 import 'widgets/link_card.dart';
 import 'widgets/link_search_field.dart';
 import 'widgets/link_category_filter.dart';
@@ -109,12 +110,13 @@ class _LinksScreenState extends State<LinksScreen> {
         elevation: 0,
         backgroundColor: ModernColors.primary,
         foregroundColor: Colors.white,
-        title: const Text(
+        title: Text(
           'Links',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: ResponsiveBreakpoints.responsiveFontSize(context, mobile: 22, desktop: 24),
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
+            color: Colors.white,
           ),
         ),
         actions: [
@@ -139,132 +141,126 @@ class _LinksScreenState extends State<LinksScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search Bar with Animation
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: _showSearchBar ? 60 : 0,
-            child: _showSearchBar
-                ? Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: LinkSearchField(
-                      controller: _searchController,
-                      isDarkMode: false, // Using light theme for unified design
-                      onChanged: (query) {
-                        context.read<DataProvider>().setSearchQuery(query);
-                      },
-                      onClear: () {
-                        _searchController.clear();
-                        context.read<DataProvider>().setSearchQuery('');
-                        setState(() => _showSearchBar = false);
-                      },
-                    ),
-                  )
-                : const SizedBox(),
-          ),
-
-          // Category Filter with Elevation
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      body: ResponsiveLayout(
+        child: Column(
+          children: [
+            // Search Bar with Animation
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: _showSearchBar ? 60 : 0,
+              child: _showSearchBar
+                  ? Padding(
+                      padding: ResponsiveBreakpoints.responsivePadding(
+                        context,
+                        mobile: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                        tablet: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                        desktop: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                      ),
+                      child: LinkSearchField(
+                        controller: _searchController,
+                        isDarkMode: false, // Using light theme for unified design
+                        onChanged: (query) {
+                          context.read<DataProvider>().setSearchQuery(query);
+                        },
+                        onClear: () {
+                          _searchController.clear();
+                          context.read<DataProvider>().setSearchQuery('');
+                          setState(() => _showSearchBar = false);
+                        },
+                      ),
+                    )
+                  : const SizedBox(),
             ),
-            child: Consumer<DataProvider>(
-              builder: (context, dataProvider, child) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  child: LinkCategoryFilter(
-                    categories: dataProvider.linkCategories,
-                    selectedCategory: _selectedCategory,
-                    isDarkMode: false, // Using light theme for unified design
-                    onCategorySelected: (category) {
-                      setState(() => _selectedCategory = category);
-                      dataProvider.setSelectedLinkCategory(category);
-                    },
+
+            // Category Filter with Elevation
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
-                );
-              },
-            ),
-          ),
-
-          // Scrollable Links List with Refresh and Animations
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                final dataProvider = context.read<DataProvider>();
-                await dataProvider.loadData();
-              },
-              color: ModernColors.primary,
-              backgroundColor: ModernColors.surface,
-              strokeWidth: 2.5,
+                ],
+              ),
               child: Consumer<DataProvider>(
                 builder: (context, dataProvider, child) {
-                  if (dataProvider.isLoading && dataProvider.links.isEmpty) {
-                    return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 20),
-                          CircularProgressIndicator(
-                            color: ModernColors.primary,
-                            strokeWidth: 3,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Loading links...',
-                            style: TextStyle(
-                              color: ModernColors.textSecondary,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  final links = dataProvider.links;
-
-                  if (links.isEmpty) {
-                    return _buildEmptyState(true);
-                  }
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    itemCount: links.length,
-                    itemBuilder: (context, index) {
-                      final link = links[index];
-                      return AnimatedOpacity(
-                        duration: Duration(milliseconds: 300 + (index * 30)),
-                        opacity: 1.0,
-                        curve: Curves.easeInOut,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: LinkCard(
-                            link: link,
-                            onTap: () => _navigateToLinkDetail(link),
-                            onAction: (action, link) => _handleLinkAction(action, link),
-                          ),
-                        ),
-                      );
-                    },
+                  return Padding(
+                    padding: ResponsiveBreakpoints.responsivePadding(
+                      context,
+                      mobile: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                      tablet: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      desktop: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    child: LinkCategoryFilter(
+                      categories: dataProvider.linkCategories,
+                      selectedCategory: _selectedCategory,
+                      isDarkMode: false, // Using light theme for unified design
+                      onCategorySelected: (category) {
+                        setState(() => _selectedCategory = category);
+                        dataProvider.setSelectedLinkCategory(category);
+                      },
+                    ),
                   );
                 },
               ),
             ),
-          ),
-        ],
+
+            // Scrollable Links List with Responsive Grid
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  final dataProvider = context.read<DataProvider>();
+                  await dataProvider.loadData();
+                },
+                color: ModernColors.primary,
+                backgroundColor: ModernColors.surface,
+                strokeWidth: 2.5,
+                child: Consumer<DataProvider>(
+                  builder: (context, dataProvider, child) {
+                    if (dataProvider.isLoading && dataProvider.links.isEmpty) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 20),
+                            CircularProgressIndicator(
+                              color: ModernColors.primary,
+                              strokeWidth: 3,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Loading links...',
+                              style: TextStyle(
+                                color: ModernColors.textSecondary,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final links = dataProvider.links;
+
+                    if (links.isEmpty) {
+                      return _buildEmptyState(true);
+                    }
+
+                    return _buildResponsiveLinksGrid(links);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16, right: 8),
+        padding: EdgeInsets.only(
+          bottom: ResponsiveBreakpoints.isDesktop(context) ? 24 : 16, 
+          right: ResponsiveBreakpoints.isDesktop(context) ? 16 : 8,
+        ),
         child: FloatingActionButton.extended(
           backgroundColor: ModernColors.primary,
           foregroundColor: Colors.white,
@@ -274,59 +270,199 @@ class _LinksScreenState extends State<LinksScreen> {
           ),
           onPressed: _navigateToAddLink,
           icon: const Icon(Icons.add, size: 24),
-          label: const Text(
+          label: Text(
             'Add Link',
-            style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+            style: TextStyle(
+              fontWeight: FontWeight.w600, 
+              letterSpacing: 0.5,
+              fontSize: ResponsiveBreakpoints.responsiveFontSize(context, mobile: 14, desktop: 16),
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _buildResponsiveLinksGrid(List<LinkEntry> links) {
+    return ResponsiveBuilder(
+      mobile: _buildMobileList(links),
+      tablet: _buildTabletGrid(links),
+      desktop: _buildDesktopGrid(links),
+    );
+  }
+
+  Widget _buildMobileList(List<LinkEntry> links) {
+    return ListView.builder(
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
+      itemCount: links.length,
+      itemBuilder: (context, index) {
+        final link = links[index];
+        return AnimatedOpacity(
+          duration: Duration(milliseconds: 300 + (index * 30)),
+          opacity: 1.0,
+          curve: Curves.easeInOut,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: LinkCard(
+              link: link,
+              onTap: () => _navigateToLinkDetail(link),
+              onAction: (action, link) => _handleLinkAction(action, link),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTabletGrid(List<LinkEntry> links) {
+    return GridView.builder(
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.2,
+      ),
+      itemCount: links.length,
+      itemBuilder: (context, index) {
+        final link = links[index];
+        return AnimatedOpacity(
+          duration: Duration(milliseconds: 300 + (index * 30)),
+          opacity: 1.0,
+          curve: Curves.easeInOut,
+          child: LinkCard(
+            link: link,
+            onTap: () => _navigateToLinkDetail(link),
+            onAction: (action, link) => _handleLinkAction(action, link),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDesktopGrid(List<LinkEntry> links) {
+    final isLargeDesktop = ResponsiveBreakpoints.isLargeDesktop(context);
+    final crossAxisCount = isLargeDesktop ? 4 : 3;
+    
+    return GridView.builder(
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(
+        horizontal: isLargeDesktop ? 32 : 24, 
+        vertical: isLargeDesktop ? 24 : 20,
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: isLargeDesktop ? 20 : 16,
+        mainAxisSpacing: isLargeDesktop ? 20 : 16,
+        childAspectRatio: 1.1,
+      ),
+      itemCount: links.length,
+      itemBuilder: (context, index) {
+        final link = links[index];
+        return AnimatedOpacity(
+          duration: Duration(milliseconds: 300 + (index * 30)),
+          opacity: 1.0,
+          curve: Curves.easeInOut,
+          child: LinkCard(
+            link: link,
+            onTap: () => _navigateToLinkDetail(link),
+            onAction: (action, link) => _handleLinkAction(action, link),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildEmptyState(bool noLinks) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+      child: ResponsiveLayout(
+        maxWidth: 600,
+        centerContent: true,
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 120,
-                height: 120,
+                width: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 120,
+                  tablet: 140,
+                  desktop: 160,
+                ),
+                height: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 120,
+                  tablet: 140,
+                  desktop: 160,
+                ),
                 decoration: BoxDecoration(
                   color: ModernColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   noLinks ? Icons.link_outlined : Icons.search_off_rounded,
-                  size: 60,
+                  size: ResponsiveBreakpoints.responsive<double>(
+                    context,
+                    mobile: 60,
+                    tablet: 70,
+                    desktop: 80,
+                  ),
                   color: ModernColors.primary,
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                context,
+                mobile: 32,
+                tablet: 36,
+                desktop: 40,
+              )),
               Text(
                 noLinks ? 'No Links Yet' : 'No Results Found',
-                style: const TextStyle(
-                  fontSize: 24,
+                style: TextStyle(
+                  fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                    context,
+                    mobile: 24,
+                    tablet: 28,
+                    desktop: 32,
+                  ),
                   fontWeight: FontWeight.w600,
                   color: ModernColors.textPrimary,
                   letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                context,
+                mobile: 16,
+                tablet: 18,
+                desktop: 20,
+              )),
               Text(
                 noLinks
                     ? 'Save and organize your important links in one secure place.'
                     : 'Try a different search term or category filter.',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                    context,
+                    mobile: 16,
+                    tablet: 18,
+                    desktop: 20,
+                  ),
                   color: ModernColors.textSecondary,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                context,
+                mobile: 40,
+                tablet: 44,
+                desktop: 48,
+              )),
               if (noLinks)
                 ElevatedButton.icon(
                   onPressed: _navigateToAddLink,
@@ -335,16 +471,31 @@ class _LinksScreenState extends State<LinksScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ModernColors.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 24,
+                        tablet: 28,
+                        desktop: 32,
+                      ),
+                      vertical: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 16,
+                        tablet: 18,
+                        desktop: 20,
+                      ),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 2,
-                    textStyle: const TextStyle(
-                      fontSize: 16,
+                    textStyle: TextStyle(
+                      fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                        context,
+                        mobile: 16,
+                        tablet: 18,
+                        desktop: 20,
+                      ),
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5,
                     ),
@@ -374,8 +525,18 @@ class _LinksScreenState extends State<LinksScreen> {
   }
 
   Widget _buildLinkDetailsModal(LinkEntry link) {
+    final modalHeight = ResponsiveBreakpoints.responsive<double>(
+      context,
+      mobile: MediaQuery.of(context).size.height * 0.75,
+      tablet: MediaQuery.of(context).size.height * 0.70,
+      desktop: 600,
+    );
+
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: modalHeight,
+      width: ResponsiveBreakpoints.isDesktop(context) 
+          ? MediaQuery.of(context).size.width * 0.6 
+          : double.infinity,
       decoration: const BoxDecoration(
         color: ModernColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -395,31 +556,61 @@ class _LinksScreenState extends State<LinksScreen> {
           
           // Header
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: ResponsiveBreakpoints.responsivePadding(
+              context,
+              mobile: const EdgeInsets.all(20),
+              tablet: const EdgeInsets.all(24),
+              desktop: const EdgeInsets.all(28),
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: ResponsiveBreakpoints.responsive<double>(
+                    context,
+                    mobile: 40,
+                    tablet: 44,
+                    desktop: 48,
+                  ),
+                  height: ResponsiveBreakpoints.responsive<double>(
+                    context,
+                    mobile: 40,
+                    tablet: 44,
+                    desktop: 48,
+                  ),
                   decoration: BoxDecoration(
                     color: ModernColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.link,
                     color: ModernColors.primary,
-                    size: 20,
+                    size: ResponsiveBreakpoints.responsive<double>(
+                      context,
+                      mobile: 20,
+                      tablet: 22,
+                      desktop: 24,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 12,
+                  tablet: 14,
+                  desktop: 16,
+                )),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         link.title,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                            context,
+                            mobile: 18,
+                            tablet: 20,
+                            desktop: 22,
+                          ),
                           fontWeight: FontWeight.w600,
                           color: ModernColors.textPrimary,
                         ),
@@ -429,8 +620,13 @@ class _LinksScreenState extends State<LinksScreen> {
                       if (link.category.isNotEmpty)
                         Text(
                           link.category,
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                              context,
+                              mobile: 14,
+                              tablet: 15,
+                              desktop: 16,
+                            ),
                             color: ModernColors.textSecondary,
                           ),
                         ),
@@ -449,68 +645,58 @@ class _LinksScreenState extends State<LinksScreen> {
           
           // Content
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (link.description.isNotEmpty) ...[
-                    _buildDetailSection('Description', link.description),
-                    const SizedBox(height: 20),
+            child: ResponsiveLayout(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (link.description.isNotEmpty) ...[
+                      _buildDetailSection('Description', link.description),
+                      SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 20,
+                        tablet: 22,
+                        desktop: 24,
+                      )),
+                    ],
+                    _buildDetailSection('URL', link.url, isUrl: true),
+                    SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                      context,
+                      mobile: 20,
+                      tablet: 22,
+                      desktop: 24,
+                    )),
+                    _buildDetailSection('Created', _formatDateTime(link.createdAt)),
                   ],
-                  _buildDetailSection('URL', link.url, isUrl: true),
-                  const SizedBox(height: 20),
-                  _buildDetailSection('Created', _formatDateTime(link.createdAt)),
-                ],
+                ),
               ),
             ),
           ),
           
           // Actions
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: ResponsiveBreakpoints.responsivePadding(
+              context,
+              mobile: const EdgeInsets.all(20),
+              tablet: const EdgeInsets.all(24),
+              desktop: const EdgeInsets.all(28),
+            ),
             decoration: const BoxDecoration(
               border: Border(top: BorderSide(color: ModernColors.divider)),
             ),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () => _openLink(link.url),
-                        icon: const Icon(Icons.open_in_new),
-                        label: const Text('Open Link'),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          _toggleFavorite(link);
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(link.isFavorite ? Icons.favorite_border : Icons.favorite),
-                        label: Text(link.isFavorite ? 'Unfavorite' : 'Favorite'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ModernColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                ResponsiveBuilder(
+                  mobile: _buildMobileActions(link),
+                  tablet: _buildTabletActions(link),
+                  desktop: _buildDesktopActions(link),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 12,
+                  tablet: 14,
+                  desktop: 16,
+                )),
                 // Sync button row
                 Consumer<DataProvider>(
                   builder: (context, dataProvider, child) {
@@ -525,7 +711,14 @@ class _LinksScreenState extends State<LinksScreen> {
                         icon: const Icon(Icons.cloud_upload, size: 18),
                         label: const Text('Sync to Cloud'),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: EdgeInsets.symmetric(
+                            vertical: ResponsiveBreakpoints.responsive<double>(
+                              context,
+                              mobile: 12,
+                              tablet: 14,
+                              desktop: 16,
+                            ),
+                          ),
                           side: const BorderSide(color: ModernColors.primary),
                           foregroundColor: ModernColors.primary,
                           shape: RoundedRectangleBorder(
@@ -544,22 +737,160 @@ class _LinksScreenState extends State<LinksScreen> {
     );
   }
 
+  Widget _buildMobileActions(LinkEntry link) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: TextButton.icon(
+                onPressed: () => _openLink(link.url),
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('Open Link'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _toggleFavorite(link);
+                  Navigator.pop(context);
+                },
+                icon: Icon(link.isFavorite ? Icons.favorite_border : Icons.favorite),
+                label: Text(link.isFavorite ? 'Unfavorite' : 'Favorite'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ModernColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabletActions(LinkEntry link) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextButton.icon(
+            onPressed: () => _openLink(link.url),
+            icon: const Icon(Icons.open_in_new),
+            label: const Text('Open Link'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              _toggleFavorite(link);
+              Navigator.pop(context);
+            },
+            icon: Icon(link.isFavorite ? Icons.favorite_border : Icons.favorite),
+            label: Text(link.isFavorite ? 'Unfavorite' : 'Favorite'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ModernColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopActions(LinkEntry link) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: TextButton.icon(
+            onPressed: () => _openLink(link.url),
+            icon: const Icon(Icons.open_in_new),
+            label: const Text('Open Link'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          flex: 2,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              _toggleFavorite(link);
+              Navigator.pop(context);
+            },
+            icon: Icon(link.isFavorite ? Icons.favorite_border : Icons.favorite),
+            label: Text(link.isFavorite ? 'Unfavorite' : 'Favorite'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ModernColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDetailSection(String title, String content, {bool isUrl = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: ResponsiveBreakpoints.responsiveFontSize(
+              context,
+              mobile: 14,
+              tablet: 15,
+              desktop: 16,
+            ),
             fontWeight: FontWeight.w600,
             color: ModernColors.textSecondary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+          context,
+          mobile: 8,
+          tablet: 10,
+          desktop: 12,
+        )),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: ResponsiveBreakpoints.responsivePadding(
+            context,
+            mobile: const EdgeInsets.all(16),
+            tablet: const EdgeInsets.all(18),
+            desktop: const EdgeInsets.all(20),
+          ),
           decoration: BoxDecoration(
             color: ModernColors.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
@@ -567,7 +898,12 @@ class _LinksScreenState extends State<LinksScreen> {
           child: Text(
             content,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                context,
+                mobile: 14,
+                tablet: 15,
+                desktop: 16,
+              ),
               color: isUrl ? ModernColors.info : ModernColors.textPrimary,
               fontFamily: isUrl ? 'monospace' : null,
             ),

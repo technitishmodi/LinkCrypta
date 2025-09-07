@@ -91,6 +91,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
             fontSize: 22,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
+            color: Colors.white,
           ),
         ),
         actions: [

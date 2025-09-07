@@ -9,9 +9,9 @@
         tools:ignore="ScopedStorage" />
 
     <application
-        android:label="flutter_application_1"
+        android:label="LinkCrypta"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:enableOnBackInvokedCallback="true"
         android:requestLegacyExternalStorage="true">
 

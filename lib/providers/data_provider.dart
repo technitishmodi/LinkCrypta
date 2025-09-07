@@ -76,42 +76,42 @@ class DataProvider extends ChangeNotifier {
     return _cachedPasswordCategories!;
   }
 
+  // Static predefined categories to avoid recreating the list
+  static const List<String> _predefinedLinkCategories = [
+    'General',
+    'Work',
+    'Personal', 
+    'Social',
+    'Learning',
+    'Entertainment',
+    'News',
+    'Shopping',
+    'Finance',
+    'Health',
+    'Travel',
+    'Technology',
+    'Sports',
+    'Food',
+    'Music',
+    'Gaming',
+    'Photography',
+    'Art & Design',
+    'Business',
+    'Education',
+    'Science',
+    'Reference',
+    'Tools',
+    'Productivity',
+    'Communication'
+  ];
+
   List<String> get linkCategories {
     if (!_linkCategoryCacheValid || _cachedLinkCategories == null) {
-      // Predefined categories that are always available
-      final predefinedCategories = [
-        'General',
-        'Work',
-        'Personal', 
-        'Social',
-        'Learning',
-        'Entertainment',
-        'News',
-        'Shopping',
-        'Finance',
-        'Health',
-        'Travel',
-        'Technology',
-        'Sports',
-        'Food',
-        'Music',
-        'Gaming',
-        'Photography',
-        'Art & Design',
-        'Business',
-        'Education',
-        'Science',
-        'Reference',
-        'Tools',
-        'Productivity',
-        'Communication'
-      ];
-      
       // Get categories from existing links
-      final existingCategories = _links.map((l) => l.category).toSet().toList();
+      final existingCategories = _links.map((l) => l.category).toSet();
       
       // Combine predefined and existing categories, remove duplicates
-      final allCategories = {...predefinedCategories, ...existingCategories}.toList();
+      final allCategories = {..._predefinedLinkCategories, ...existingCategories}.toList();
       allCategories.sort();
       
       _cachedLinkCategories = ['All', ...allCategories];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/onboarding_service.dart';
+import '../utils/responsive.dart';
 
 /// Modern Gradient + Glass UI Colors
 class ModernColors {
@@ -108,83 +109,148 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
         child: Center(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Transform.rotate(
-                    angle: _rotationAnimation.value,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Glass-effect icon container
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              width: 1.5,
+          child: ResponsiveLayout(
+            maxWidth: 600,
+            centerContent: true,
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Transform.rotate(
+                      angle: _rotationAnimation.value,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Glass-effect icon container
+                          Container(
+                            width: ResponsiveBreakpoints.responsive<double>(
+                              context,
+                              mobile: 120,
+                              tablet: 140,
+                              desktop: 160,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.15),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
+                            height: ResponsiveBreakpoints.responsive<double>(
+                              context,
+                              mobile: 120,
+                              tablet: 140,
+                              desktop: 160,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(
+                                ResponsiveBreakpoints.responsive<double>(
+                                  context,
+                                  mobile: 24,
+                                  tablet: 28,
+                                  desktop: 32,
+                                ),
                               ),
-                            ],
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.lock_rounded,
+                              size: ResponsiveBreakpoints.responsive<double>(
+                                context,
+                                mobile: 60,
+                                tablet: 70,
+                                desktop: 80,
+                              ),
+                              color: ModernColors.white,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.lock_rounded,
-                            size: 60,
-                            color: ModernColors.white,
+
+                          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                            context,
+                            mobile: 24,
+                            tablet: 28,
+                            desktop: 32,
+                          )),
+
+                          // App Name
+                          Text(
+                            'LinkCrypta',
+                            style: TextStyle(
+                              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                                context,
+                                mobile: 32,
+                                tablet: 36,
+                                desktop: 40,
+                              ),
+                              fontWeight: FontWeight.bold,
+                              color: ModernColors.white,
+                              letterSpacing: 1.5,
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 24),
+                          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                            context,
+                            mobile: 8,
+                            tablet: 10,
+                            desktop: 12,
+                          )),
 
-                        // App Name
-                        const Text(
-                          'LinkCrypta',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: ModernColors.white,
-                            letterSpacing: 1.5,
+                          // Tagline
+                          Text(
+                            'Secure Password & Link Vault',
+                            style: TextStyle(
+                              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                                context,
+                                mobile: 16,
+                                tablet: 18,
+                                desktop: 20,
+                              ),
+                              color: ModernColors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 8),
+                          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                            context,
+                            mobile: 40,
+                            tablet: 44,
+                            desktop: 48,
+                          )),
 
-                        // Tagline
-                        const Text(
-                          'Secure Password & Link Vault',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: ModernColors.white,
-                            fontWeight: FontWeight.w500,
+                          // Progress Indicator
+                          SizedBox(
+                            width: ResponsiveBreakpoints.responsive<double>(
+                              context,
+                              mobile: 24,
+                              tablet: 28,
+                              desktop: 32,
+                            ),
+                            height: ResponsiveBreakpoints.responsive<double>(
+                              context,
+                              mobile: 24,
+                              tablet: 28,
+                              desktop: 32,
+                            ),
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(ModernColors.white),
+                            ),
                           ),
-                        ),
-
-                        const SizedBox(height: 40),
-
-                        // Progress Indicator
-                        const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(ModernColors.white),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

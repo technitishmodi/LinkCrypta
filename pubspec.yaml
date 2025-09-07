@@ -78,12 +78,24 @@ dependencies:
   firebase_auth: ^5.7.0
   cloud_firestore: ^5.4.4
   google_sign_in: ^6.1.5
+  
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  flutter_launcher_icons: "^0.14.4"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/App_logo.png"
+  # adaptive_icon_background: "#FFFFFF" # or transparent
+  # adaptive_icon_foreground: "assets/icon/app_.png"
+
+  
+  # flutter_launcher_icons: ^0.14.4
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -129,5 +141,6 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+# For details regarding fonts from package dependencies,
+# see https://flutter.dev/to/font-from-package
+
