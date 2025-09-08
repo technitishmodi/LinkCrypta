@@ -309,6 +309,7 @@ class DataProvider extends ChangeNotifier {
           await ActivityLogService.logPasswordUpdated(entry, oldEntry.password);
         }
         
+        _invalidateAllCaches(); // Invalidate caches when data changes
         notifyListeners();
       }
     } catch (e) {
@@ -401,6 +402,7 @@ class DataProvider extends ChangeNotifier {
       final index = _links.indexWhere((l) => l.id == entry.id);
       if (index != -1) {
         _links[index] = entry;
+        _invalidateAllCaches(); // Invalidate caches when data changes
         notifyListeners();
       }
     } catch (e) {

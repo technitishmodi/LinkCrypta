@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import '../../../services/onboarding_service.dart';
 import '../../../services/firebase_auth_service.dart';
 import '../../../utils/helpers.dart';
+import '../../../utils/responsive.dart';
 import '../../../providers/data_provider.dart';
+import '../../../providers/theme_provider.dart';
 import 'security_settings_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
@@ -134,31 +136,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: ModernColors.white,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Profile',
           style: TextStyle(
             color: ModernColors.textDark,
-            fontSize: 20,
+            fontSize: ResponsiveBreakpoints.responsiveFontSize(
+              context,
+              mobile: 20,
+              tablet: 22,
+              desktop: 24,
+            ),
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: false,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      body: ResponsiveLayout(
+        child: ListView(
+          padding: ResponsiveBreakpoints.responsivePadding(
+            context,
+            mobile: const EdgeInsets.all(16),
+            tablet: const EdgeInsets.all(20),
+            desktop: const EdgeInsets.all(24),
+          ),
+          children: [
           // Profile Header
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: ResponsiveBreakpoints.responsivePadding(
+              context,
+              mobile: const EdgeInsets.all(24),
+              tablet: const EdgeInsets.all(28),
+              desktop: const EdgeInsets.all(32),
+            ),
             decoration: BoxDecoration(
               color: ModernColors.lightBlue,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(
+                ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 16,
+                  tablet: 18,
+                  desktop: 20,
+                ),
+              ),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: ResponsiveBreakpoints.responsive<double>(
+                    context,
+                    mobile: 60,
+                    tablet: 70,
+                    desktop: 80,
+                  ),
+                  height: ResponsiveBreakpoints.responsive<double>(
+                    context,
+                    mobile: 60,
+                    tablet: 70,
+                    desktop: 80,
+                  ),
                   decoration: const BoxDecoration(
                     color: ModernColors.primaryBlue,
                     shape: BoxShape.circle,
@@ -167,47 +202,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ? ClipOval(
                           child: Image.network(
                             _currentUser!.photoURL!,
-                            width: 60,
-                            height: 60,
+                            width: ResponsiveBreakpoints.responsive<double>(
+                              context,
+                              mobile: 60,
+                              tablet: 70,
+                              desktop: 80,
+                            ),
+                            height: ResponsiveBreakpoints.responsive<double>(
+                              context,
+                              mobile: 60,
+                              tablet: 70,
+                              desktop: 80,
+                            ),
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Icon(
+                            errorBuilder: (context, error, stackTrace) => Icon(
                               Icons.person_rounded,
                               color: ModernColors.white,
-                              size: 30,
+                              size: ResponsiveBreakpoints.responsive<double>(
+                                context,
+                                mobile: 30,
+                                tablet: 35,
+                                desktop: 40,
+                              ),
                             ),
                           ),
                         )
-                      : const Icon(
+                      : Icon(
                           Icons.person_rounded,
                           color: ModernColors.white,
-                          size: 30,
+                          size: ResponsiveBreakpoints.responsive<double>(
+                            context,
+                            mobile: 30,
+                            tablet: 35,
+                            desktop: 40,
+                          ),
                         ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 16,
+                  tablet: 18,
+                  desktop: 20,
+                )),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         _currentUser?.displayName ?? 'LinkCrypta User',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                            context,
+                            mobile: 18,
+                            tablet: 20,
+                            desktop: 22,
+                          ),
                           fontWeight: FontWeight.w600,
                           color: ModernColors.textDark,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 4,
+                        tablet: 5,
+                        desktop: 6,
+                      )),
                       Text(
                         _currentUser?.email ?? 'Secure Password Manager',
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                            context,
+                            mobile: 14,
+                            tablet: 15,
+                            desktop: 16,
+                          ),
                           color: ModernColors.textLight,
                         ),
                       ),
                       if (_currentUser != null) ...[
-                        const SizedBox(height: 4),
+                        SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                          context,
+                          mobile: 4,
+                          tablet: 5,
+                          desktop: 6,
+                        )),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: ResponsiveBreakpoints.responsivePadding(
+                            context,
+                            mobile: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            tablet: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                            desktop: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -215,7 +300,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text(
                             'Google Account',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                                context,
+                                mobile: 12,
+                                tablet: 13,
+                                desktop: 14,
+                              ),
                               color: Colors.green[700],
                               fontWeight: FontWeight.w500,
                             ),
@@ -229,19 +319,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 24,
+            tablet: 28,
+            desktop: 32,
+          )),
           
           // Settings Section
-          const Text(
+          Text(
             'Settings',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                context,
+                mobile: 16,
+                tablet: 18,
+                desktop: 20,
+              ),
               fontWeight: FontWeight.w600,
               color: ModernColors.textDark,
             ),
           ),
           
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          )),
           
           // Settings Items
           _buildSettingsItem(
@@ -285,6 +390,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
             },
           ),
+
+          // Text Size Settings
+          _buildTextSizeSettings(context),
           
           if (_currentUser != null)
             _buildSettingsItem(
@@ -294,20 +402,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: 'Upload all passwords and links to cloud',
               onTap: () => _syncAllToFirebase(),
             ),
+    
           
-          const SizedBox(height: 24),
+         
+         
           
-          // Account Section
-          const Text(
-            'Account',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: ModernColors.textDark,
-            ),
-          ),
-          
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          )),
           
           if (_currentUser == null)
             _buildSettingsItem(
@@ -320,19 +425,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
             ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 24,
+            tablet: 28,
+            desktop: 32,
+          )),
           
           // About Section
-          const Text(
+          Text(
             'About',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                context,
+                mobile: 16,
+                tablet: 18,
+                desktop: 20,
+              ),
               fontWeight: FontWeight.w600,
               color: ModernColors.textDark,
             ),
           ),
           
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          )),
           
           _buildSettingsItem(
             context,
@@ -376,19 +496,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 24,
+            tablet: 28,
+            desktop: 32,
+          )),
           
           // Developer Section
-          const Text(
+          Text(
             'Developer',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                context,
+                mobile: 16,
+                tablet: 18,
+                desktop: 20,
+              ),
               fontWeight: FontWeight.w600,
               color: ModernColors.textDark,
             ),
           ),
           
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          )),
           
           _buildSettingsItem(
             context,
@@ -407,7 +542,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           
           
-          const SizedBox(height: 32),
+          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 32,
+            tablet: 36,
+            desktop: 40,
+          )),
           
           // Logout Button
           SizedBox(
@@ -420,7 +560,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: ResponsiveBreakpoints.responsivePadding(
+                  context,
+                  mobile: const EdgeInsets.symmetric(vertical: 16),
+                  tablet: const EdgeInsets.symmetric(vertical: 18),
+                  desktop: const EdgeInsets.symmetric(vertical: 20),
+                ),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -433,15 +578,198 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     )
                   : Text(
                       _currentUser != null ? 'Sign Out' : 'Not Signed In',
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                          context,
+                          mobile: 16,
+                          tablet: 17,
+                          desktop: 18,
+                        ),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
             ),
           ),
         ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildTextSizeSettings(BuildContext context) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Container(
+          margin: EdgeInsets.only(
+            bottom: ResponsiveBreakpoints.responsive<double>(
+              context,
+              mobile: 8,
+              tablet: 10,
+              desktop: 12,
+            ),
+          ),
+          decoration: BoxDecoration(
+            color: ModernColors.white,
+            borderRadius: BorderRadius.circular(
+              ResponsiveBreakpoints.responsive<double>(
+                context,
+                mobile: 12,
+                tablet: 14,
+                desktop: 16,
+              ),
+            ),
+            border: Border.all(
+              color: ModernColors.lightGrey,
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: ResponsiveBreakpoints.responsivePadding(
+              context,
+              mobile: const EdgeInsets.all(16),
+              tablet: const EdgeInsets.all(18),
+              desktop: const EdgeInsets.all(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 40,
+                        tablet: 44,
+                        desktop: 48,
+                      ),
+                      height: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 40,
+                        tablet: 44,
+                        desktop: 48,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ModernColors.primaryBlue.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.text_fields_rounded,
+                        size: ResponsiveBreakpoints.responsive<double>(
+                          context,
+                          mobile: 20,
+                          tablet: 22,
+                          desktop: 24,
+                        ),
+                        color: ModernColors.primaryBlue,
+                      ),
+                    ),
+                    SizedBox(width: ResponsiveBreakpoints.responsive<double>(
+                      context,
+                      mobile: 16,
+                      tablet: 18,
+                      desktop: 20,
+                    )),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Text Size',
+                            style: TextStyle(
+                              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                                context,
+                                mobile: 16,
+                                tablet: 17,
+                                desktop: 18,
+                              ),
+                              fontWeight: FontWeight.w500,
+                              color: ModernColors.textDark,
+                            ),
+                          ),
+                          Text(
+                            'Adjust text size for better readability',
+                            style: TextStyle(
+                              fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                                context,
+                                mobile: 14,
+                                tablet: 15,
+                                desktop: 16,
+                              ),
+                              color: ModernColors.textLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 16,
+                  tablet: 18,
+                  desktop: 20,
+                )),
+                Row(
+                  children: [
+                    Text(
+                      'Small',
+                      style: TextStyle(
+                        fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                          context,
+                          mobile: 12,
+                          tablet: 13,
+                          desktop: 14,
+                        ),
+                        color: ModernColors.textLight,
+                      ),
+                    ),
+                    Expanded(
+                      child: Slider(
+                        value: themeProvider.textScaleFactor,
+                        min: 0.8,
+                        max: 1.4,
+                        divisions: 6,
+                        activeColor: ModernColors.primaryBlue,
+                        inactiveColor: ModernColors.lightGrey,
+                        onChanged: (value) {
+                          themeProvider.setTextScaleFactor(value);
+                        },
+                      ),
+                    ),
+                    Text(
+                      'Large',
+                      style: TextStyle(
+                        fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                          context,
+                          mobile: 12,
+                          tablet: 13,
+                          desktop: 14,
+                        ),
+                        color: ModernColors.textLight,
+                      ),
+                    ),
+                  ],
+                ),
+                Center(
+                  child: Text(
+                    'Sample text: ${(themeProvider.textScaleFactor * 100).round()}%',
+                    style: TextStyle(
+                      fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                        context,
+                        mobile: 14,
+                        tablet: 15,
+                        desktop: 16,
+                      ),
+                      color: ModernColors.textDark,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -453,10 +781,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(
+        bottom: ResponsiveBreakpoints.responsive<double>(
+          context,
+          mobile: 8,
+          tablet: 10,
+          desktop: 12,
+        ),
+      ),
       decoration: BoxDecoration(
         color: ModernColors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          ),
+        ),
         border: Border.all(
           color: ModernColors.lightGrey,
           width: 1,
@@ -464,30 +806,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: ListTile(
         leading: Container(
-          width: 40,
-          height: 40,
+          width: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 40,
+            tablet: 44,
+            desktop: 48,
+          ),
+          height: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 40,
+            tablet: 44,
+            desktop: 48,
+          ),
           decoration: BoxDecoration(
             color: ModernColors.primaryBlue.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
-            size: 20,
+            size: ResponsiveBreakpoints.responsive<double>(
+              context,
+              mobile: 20,
+              tablet: 22,
+              desktop: 24,
+            ),
             color: ModernColors.primaryBlue,
           ),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: ResponsiveBreakpoints.responsiveFontSize(
+              context,
+              mobile: 16,
+              tablet: 17,
+              desktop: 18,
+            ),
             fontWeight: FontWeight.w500,
             color: ModernColors.textDark,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: ResponsiveBreakpoints.responsiveFontSize(
+              context,
+              mobile: 14,
+              tablet: 15,
+              desktop: 16,
+            ),
             color: ModernColors.textLight,
           ),
         ),
@@ -496,7 +863,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: ModernColors.textLight,
         ),
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: ResponsiveBreakpoints.responsivePadding(
+          context,
+          mobile: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          tablet: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          desktop: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
       ),
     );
   }

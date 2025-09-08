@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/data_provider.dart';
-import '../../../widgets/password_card.dart';
+import '../passwords/widgets/password_card.dart';
 import '../../../utils/constants.dart';
 import '../../../models/link_entry.dart';
+import '../../../models/password_entry.dart';
+import '../../../services/auth_service.dart';
+import '../../../utils/helpers.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -89,12 +92,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
               child: PasswordCard(
                 password: password,
                 onTap: () {},
-                onFavorite: () {
-                  dataProvider.togglePasswordFavorite(password);
-                },
-                onDelete: () {
-                  dataProvider.deletePassword(password);
-                },
+                onAction: (action, password) => _handlePasswordAction(action, password, dataProvider),
               ),
             );
           },
@@ -324,5 +322,94 @@ class _FavoritesScreenState extends State<FavoritesScreen> with TickerProviderSt
         backgroundColor: AppConstants.infoColor,
       ),
     );
+  }
+
+  Future<void> _handlePasswordAction(String action, PasswordEntry password, DataProvider dataProvider) async {
+    switch (action) {
+      case 'copy_password':
+        // Authenticate before copying password
+        final authenticated = await AuthService.showAuthDialog(
+          context,
+          reason: 'Authenticate to copy password',
+        );
+        
+        if (authenticated) {
+          try {
+            final decryptedPassword = dataProvider.getDecryptedPassword(password);
+            await AppHelpers.copyToClipboard(decryptedPassword);
+            if (mounted) {
+              AppHelpers.showSnackBar(context, 'Password copied to clipboard');
+            }
+            // Log password view activity (since copying counts as viewing)
+            dataProvider.logPasswordViewed(password);
+          } catch (e) {
+            if (mounted) {
+              AppHelpers.showSnackBar(
+                context, 
+                'Failed to decrypt password: ${e.toString()}', 
+                backgroundColor: Colors.red
+              );
+            }
+          }
+        }
+        break;
+        
+      case 'copy_username':
+        await AppHelpers.copyToClipboard(password.username);
+        if (mounted) {
+          AppHelpers.showSnackBar(context, 'Username copied to clipboard');
+        }
+        break;
+        
+      case 'open_url':
+        if (password.url.isNotEmpty) {
+          final success = await AppHelpers.launchUrl(password.url);
+          if (!success && mounted) {
+            AppHelpers.showSnackBar(context, 'Cannot open this website', backgroundColor: Colors.red);
+          }
+        }
+        break;
+        
+      case 'favorite':
+        await dataProvider.togglePasswordFavorite(password);
+        break;
+        
+      case 'edit':
+        // Navigate to edit screen (you may need to import the edit screen)
+        break;
+        
+      case 'sync':
+        try {
+          await dataProvider.syncPasswordToFirebase(password);
+          if (mounted) {
+            AppHelpers.showSnackBar(context, 'Password synced to cloud');
+          }
+        } catch (e) {
+          if (mounted) {
+            AppHelpers.showSnackBar(context, 'Sync failed: ${e.toString()}', backgroundColor: Colors.red);
+          }
+        }
+        break;
+        
+      case 'delete':
+        final confirmed = await AppHelpers.showConfirmDialog(
+          context,
+          'Delete Password',
+          'Are you sure you want to delete "${password.name}"? This action cannot be undone.',
+          confirmText: 'Delete',
+        );
+
+        if (confirmed) {
+          await dataProvider.deletePassword(password);
+          if (mounted) {
+            AppHelpers.showSnackBar(
+              context,
+              'Password deleted',
+              backgroundColor: Colors.red,
+            );
+          }
+        }
+        break;
+    }
   }
 }

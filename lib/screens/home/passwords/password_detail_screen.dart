@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../models/password_entry.dart';
 import '../../../providers/data_provider.dart';
 import '../../../utils/app_helpers.dart';
+import '../../../utils/responsive.dart';
 import '../../../services/auth_service.dart';
 import 'edit_password_screen.dart';
 
@@ -109,13 +110,25 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.all(16.0),
+            padding: ResponsiveBreakpoints.responsivePadding(
+              context,
+              mobile: const EdgeInsets.all(16.0),
+              tablet: const EdgeInsets.all(20.0),
+              desktop: const EdgeInsets.all(24.0),
+            ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // Header Card with Gradient
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 24,
+                        tablet: 28,
+                        desktop: 32,
+                      ),
+                    ),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -127,42 +140,84 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                     boxShadow: [
                       BoxShadow(
                         color: _colorScheme['primary']!.withValues(alpha: 0.3),
-                        blurRadius: 15,
+                        blurRadius: ResponsiveBreakpoints.responsive<double>(
+                          context,
+                          mobile: 15,
+                          tablet: 18,
+                          desktop: 20,
+                        ),
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(24),
+                  padding: ResponsiveBreakpoints.responsivePadding(
+                    context,
+                    mobile: const EdgeInsets.all(24),
+                    tablet: const EdgeInsets.all(28),
+                    desktop: const EdgeInsets.all(32),
+                  ),
                   child: Column(
                     children: [
                       Container(
-                        width: 72,
-                        height: 72,
+                        width: ResponsiveBreakpoints.responsive<double>(
+                          context,
+                          mobile: 72,
+                          tablet: 80,
+                          desktop: 88,
+                        ),
+                        height: ResponsiveBreakpoints.responsive<double>(
+                          context,
+                          mobile: 72,
+                          tablet: 80,
+                          desktop: 88,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.lock_rounded,
                           color: Colors.white,
-                          size: 36,
+                          size: ResponsiveBreakpoints.responsive<double>(
+                            context,
+                            mobile: 36,
+                            tablet: 40,
+                            desktop: 44,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 16,
+                        tablet: 18,
+                        desktop: 20,
+                      )),
                       Text(
                         widget.password.name,
-                        style: const TextStyle(
-                          fontSize: 22,
+                        style: TextStyle(
+                          fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                            context,
+                            mobile: 22,
+                            tablet: 24,
+                            desktop: 26,
+                          ),
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 8,
+                        tablet: 10,
+                        desktop: 12,
+                      )),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                        padding: ResponsiveBreakpoints.responsivePadding(
+                          context,
+                          mobile: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          tablet: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                          desktop: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
@@ -170,41 +225,80 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                         ),
                         child: Text(
                           widget.password.category,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
-                            fontSize: 12,
+                            fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                              context,
+                              mobile: 12,
+                              tablet: 13,
+                              desktop: 14,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 24,
+                  tablet: 28,
+                  desktop: 32,
+                )),
 
                 // Details Section
                 Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
+                  padding: EdgeInsets.only(
+                    left: ResponsiveBreakpoints.responsive<double>(
+                      context,
+                      mobile: 8.0,
+                      tablet: 10.0,
+                      desktop: 12.0,
+                    ),
+                  ),
                   child: Text(
                     'DETAILS',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: ResponsiveBreakpoints.responsiveFontSize(
+                        context,
+                        mobile: 12,
+                        tablet: 13,
+                        desktop: 14,
+                      ),
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       letterSpacing: 1.2,
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: ResponsiveBreakpoints.responsive<double>(
+                  context,
+                  mobile: 12,
+                  tablet: 14,
+                  desktop: 16,
+                )),
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveBreakpoints.responsive<double>(
+                        context,
+                        mobile: 20,
+                        tablet: 22,
+                        desktop: 24,
+                      ),
+                    ),
                     gradient: cardGradient,
                     boxShadow: [
                       if (!isDarkMode)
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
+                          blurRadius: ResponsiveBreakpoints.responsive<double>(
+                            context,
+                            mobile: 10,
+                            tablet: 12,
+                            desktop: 15,
+                          ),
                           offset: const Offset(0, 4),
                         ),
                     ],

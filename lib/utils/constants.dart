@@ -16,47 +16,47 @@ class AppConstants {
   static const Color errorColor = Color(0xFFB3261E);
   static const Color successColor = Color(0xFF4CAF50);
   static const Color warningColor = Color(0xFFFF9800);
-    static const Color infoColor = Color(0xFF2196F3);
+  static const Color infoColor = Color(0xFF2196F3);
 
-  // Text Styles
+  // Text Styles - Increased sizes for better readability
   static const TextStyle headlineLarge = TextStyle(
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: FontWeight.bold,
     color: Color(0xFF1C1B1F),
   );
 
   static const TextStyle headlineMedium = TextStyle(
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: FontWeight.w600,
     color: Color(0xFF1C1B1F),
   );
 
   static const TextStyle titleLarge = TextStyle(
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: FontWeight.w600,
     color: Color(0xFF1C1B1F),
   );
 
   static const TextStyle titleMedium = TextStyle(
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: FontWeight.w500,
     color: Color(0xFF1C1B1F),
   );
 
   static const TextStyle bodyLarge = TextStyle(
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.normal,
     color: Color(0xFF1C1B1F),
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.normal,
     color: Color(0xFF1C1B1F),
   );
 
   static const TextStyle labelLarge = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w500,
     color: Color(0xFF1C1B1F),
   );

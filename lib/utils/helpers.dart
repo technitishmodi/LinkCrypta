@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class AppHelpers {
   // URL Validation and Launching
@@ -35,10 +35,11 @@ class AppHelpers {
   if (!isValidUrl(normalizedUrl)) return false;
 
   try {
-    // Use the global launchUrl from url_launcher, passing a String
-    return await canLaunchUrl(Uri.parse(normalizedUrl))
-        ? await launch(normalizedUrl)
-        : false;
+    final uri = Uri.parse(normalizedUrl);
+    if (await url_launcher.canLaunchUrl(uri)) {
+      return await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
+    }
+    return false;
   } catch (e) {
     return false;
   }

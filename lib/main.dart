@@ -95,6 +95,14 @@ class LinkCryptaApp extends StatelessWidget {
             theme: modifiedLightTheme,
             darkTheme: modifiedDarkTheme,
             themeMode: themeProvider.themeMode,
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaleFactor: textScaleFactor,
+                ),
+                child: child!,
+              );
+            },
         initialRoute: '/',
         routes: {
           '/': (context) => const SplashScreen(),

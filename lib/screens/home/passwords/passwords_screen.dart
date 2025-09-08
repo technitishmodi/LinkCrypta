@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import '../../../providers/data_provider.dart';
 import '../../../utils/helpers.dart';
 import '../../../models/password_entry.dart';
+import '../../../services/auth_service.dart';
 import 'add_password_screen.dart';
 import 'password_detail_screen.dart';
-import '../../../widgets/password_card.dart';
+import 'edit_password_screen.dart';
+import 'widgets/password_card.dart';
 import '../../../widgets/search_bar_widget.dart';
 import '../../../widgets/category_filter_widget.dart';
 
@@ -231,8 +233,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                               child: PasswordCard(
                                 password: password,
                                 onTap: () => _navigateToPasswordDetail(password),
-                                onFavorite: () => _toggleFavorite(password),
-                                onDelete: () => _deletePassword(password),
+                                onAction: (action, password) => _handlePasswordAction(action, password),
                               ),
                             ),
                           );
@@ -381,6 +382,87 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
           backgroundColor: ModernColors.error,
         );
       }
+    }
+  }
+
+  Future<void> _handlePasswordAction(String action, PasswordEntry password) async {
+    final dataProvider = context.read<DataProvider>();
+    
+    switch (action) {
+      case 'copy_password':
+        // Authenticate before copying password
+        final authenticated = await AuthService.showAuthDialog(
+          context,
+          reason: 'Authenticate to copy password',
+        );
+        
+        if (authenticated) {
+          try {
+            final decryptedPassword = dataProvider.getDecryptedPassword(password);
+            await AppHelpers.copyToClipboard(decryptedPassword);
+            if (mounted) {
+              AppHelpers.showSnackBar(context, 'Password copied to clipboard');
+            }
+            // Log password view activity (since copying counts as viewing)
+            dataProvider.logPasswordViewed(password);
+          } catch (e) {
+            if (mounted) {
+              AppHelpers.showSnackBar(
+                context, 
+                'Failed to decrypt password: ${e.toString()}', 
+                backgroundColor: ModernColors.error
+              );
+            }
+          }
+        }
+        break;
+        
+      case 'copy_username':
+        await AppHelpers.copyToClipboard(password.username);
+        if (mounted) {
+          AppHelpers.showSnackBar(context, 'Username copied to clipboard');
+        }
+        break;
+        
+      case 'open_url':
+        if (password.url.isNotEmpty) {
+          final success = await AppHelpers.launchUrl(password.url);
+          if (!success && mounted) {
+            AppHelpers.showSnackBar(context, 'Cannot open this website', backgroundColor: ModernColors.error);
+          }
+        }
+        break;
+        
+      case 'favorite':
+        await _toggleFavorite(password);
+        break;
+        
+      case 'edit':
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => EditPasswordScreen(password: password),
+            ),
+          );
+        }
+        break;
+        
+      case 'sync':
+        try {
+          await dataProvider.syncPasswordToFirebase(password);
+          if (mounted) {
+            AppHelpers.showSnackBar(context, 'Password synced to cloud');
+          }
+        } catch (e) {
+          if (mounted) {
+            AppHelpers.showSnackBar(context, 'Sync failed: ${e.toString()}', backgroundColor: ModernColors.error);
+          }
+        }
+        break;
+        
+      case 'delete':
+        await _deletePassword(password);
+        break;
     }
   }
 }

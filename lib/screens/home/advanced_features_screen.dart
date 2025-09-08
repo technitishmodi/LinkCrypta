@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/data_provider.dart';
+import '../../utils/responsive.dart';
 import 'password_health_dashboard_screen.dart';
 import 'advanced_password_generator_screen.dart';
 import 'analytics_dashboard_screen.dart';
@@ -199,68 +200,79 @@ class AdvancedFeaturesScreen extends StatelessWidget {
       children: [
         Text(
           'Advanced Features',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.85,
+        const SizedBox(height: 10),
+        // First Row: Password Health + Password Generator
+        Row(
           children: [
-            _buildFeatureCard(
-              context,
-              'Password Health',
-              'Analyze password strength and security',
-              Icons.health_and_safety,
-              const Color(0xFF4CAF50),
-              () => Navigator.push(
+            Expanded(
+              child: _buildFeatureCard(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const PasswordHealthDashboardScreen(),
+                'Password Health',
+                'Analyze password strength and security',
+                Icons.health_and_safety,
+                const Color(0xFF4CAF50),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PasswordHealthDashboardScreen(),
+                  ),
                 ),
               ),
             ),
-            _buildFeatureCard(
-              context,
-              'Password Generator',
-              'Create strong, secure passwords',
-              Icons.auto_fix_high,
-              const Color(0xFF2196F3),
-              () => Navigator.push(
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildFeatureCard(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AdvancedPasswordGeneratorScreen(),
+                'Password Generator',
+                'Create strong, secure passwords',
+                Icons.auto_fix_high,
+                const Color(0xFF2196F3),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdvancedPasswordGeneratorScreen(),
+                  ),
                 ),
               ),
             ),
-            _buildFeatureCard(
-              context,
-              'Analytics Dashboard',
-              'View usage patterns and insights',
-              Icons.analytics,
-              const Color(0xFF9C27B0),
-              () => Navigator.push(
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Second Row: Analytics + Smart Auto-Fill
+        Row(
+          children: [
+            Expanded(
+              child: _buildFeatureCard(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AnalyticsDashboardScreen(),
+                'Analytics Dashboard',
+                'View usage patterns and insights',
+                Icons.analytics,
+                const Color(0xFF9C27B0),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AnalyticsDashboardScreen(),
+                  ),
                 ),
               ),
             ),
-            _buildFeatureCard(
-              context,
-              'Smart Auto-Fill',
-              'Intelligent form filling with URL matching',
-              Icons.auto_awesome,
-              const Color(0xFFFF9800),
-              () => Navigator.push(
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildFeatureCard(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SmartAutoFillScreen(),
+                'Smart Auto-Fill',
+                'Intelligent form filling with URL matching',
+                Icons.auto_awesome,
+                const Color(0xFFFF9800),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SmartAutoFillScreen(),
+                  ),
                 ),
               ),
             ),
@@ -281,6 +293,7 @@ class AdvancedFeaturesScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 140,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -308,17 +321,17 @@ class AdvancedFeaturesScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Expanded(
+            Flexible(
               child: Text(
                 description,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey.shade600,
                 ),
                 maxLines: 3,

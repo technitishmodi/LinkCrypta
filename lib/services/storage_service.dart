@@ -72,8 +72,25 @@ class StorageService {
   }
 
   static Future<void> updatePassword(PasswordEntry entry) async {
-    entry.updatedAt = DateTime.now();
-    await entry.save();
+    // Find the entry in the Hive box by ID
+    int? indexToUpdate;
+    for (int i = 0; i < _passwordBox.length; i++) {
+      final boxEntry = _passwordBox.getAt(i);
+      if (boxEntry?.id == entry.id) {
+        indexToUpdate = i;
+        break;
+      }
+    }
+    
+    if (indexToUpdate != null) {
+      // Update the timestamp
+      entry.updatedAt = DateTime.now();
+      // Update the entry at the found index
+      await _passwordBox.putAt(indexToUpdate, entry);
+    } else {
+      // If not found, add as new entry
+      await _passwordBox.add(entry);
+    }
   }
 
   static Future<void> deletePassword(PasswordEntry entry) async {
@@ -139,15 +156,25 @@ class StorageService {
   }
 
   static Future<void> updateLink(LinkEntry entry) async {
-    // Updating link details
-    entry.updatedAt = DateTime.now();
-    await entry.save();
-    // Link saved successfully
+    // Find the entry in the Hive box by ID
+    int? indexToUpdate;
+    for (int i = 0; i < _linkBox.length; i++) {
+      final boxEntry = _linkBox.getAt(i);
+      if (boxEntry?.id == entry.id) {
+        indexToUpdate = i;
+        break;
+      }
+    }
     
-    // Verify the save worked by reading it back
-    final allLinks = getAllLinks();
-    allLinks.firstWhere((l) => l.id == entry.id, orElse: () => entry);
-    // Verification completed
+    if (indexToUpdate != null) {
+      // Update the timestamp
+      entry.updatedAt = DateTime.now();
+      // Update the entry at the found index
+      await _linkBox.putAt(indexToUpdate, entry);
+    } else {
+      // If not found, add as new entry
+      await _linkBox.add(entry);
+    }
   }
 
   static Future<void> deleteLink(LinkEntry entry) async {

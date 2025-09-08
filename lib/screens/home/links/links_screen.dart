@@ -919,23 +919,20 @@ class _LinksScreenState extends State<LinksScreen> {
 
   Future<void> _openLink(String url) async {
     try {
-      final uri = Uri.parse(url);
-      if (await url_launcher.canLaunchUrl(uri)) {
-        await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          AppHelpers.showSnackBar(
-            context,
-            'Cannot open this link',
-            backgroundColor: ModernColors.error,
-          );
-        }
+      // Use AppHelpers to properly launch the URL with normalization
+      final success = await AppHelpers.launchUrl(url);
+      if (!success && mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          'Cannot open this link',
+          backgroundColor: ModernColors.error,
+        );
       }
     } catch (e) {
       if (mounted) {
         AppHelpers.showSnackBar(
           context,
-          'Error opening link',
+          'Error opening link: ${e.toString()}',
           backgroundColor: ModernColors.error,
         );
       }
