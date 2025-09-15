@@ -279,13 +279,6 @@ flutter drive --target=test_driver/app.dart
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
-
-### Common Issues
-- **Biometric not working**: Check device permissions and hardware support
-- **Data not syncing**: Verify network connection and Firebase configuration
-- **App crashes**: Check logs and ensure all dependencies are installed
-
 ### Getting Help
 - 📧 Email: support@linkcrypta.app
 - 🐛 Issues: [GitHub Issues](https://github.com/technitishmodi/vaultmate/issues)
