@@ -1,0 +1,769 @@
+// LinkCrypta Browser Extension - Popup Script
+class PopupManager {
+  constructor() {
+    this.currentScreen = 'loading';
+    this.isAuthenticated = false;
+    this.currentUser = null;
+    this.passwords = [];
+    this.filteredPasswords = [];
+    this.currentTab = null;
+    this.searchQuery = '';
+    this.touchStartY = 0;
+    this.touchStartX = 0;
+    this.isScrolling = false;
+    
+    // Initialize
+    this.init();
+  }
+
+  async init() {
+    try {
+      // Setup event listeners
+      this.setupEventListeners();
+      
+      // Setup touch handlers for mobile
+      this.setupTouchHandlers();
+      
+      // Get current tab info
+      await this.getCurrentTab();
+      
+      // Check authentication status
+      await this.checkAuthStatus();
+      
+      // Load data if authenticated
+      if (this.isAuthenticated) {
+        await this.loadPasswords();
+        this.showScreen('main');
+      } else {
+        this.showScreen('auth');
+      }
+    } catch (error) {
+      console.error('Popup initialization failed:', error);
+      this.showScreen('auth');
+    }
+  }
+
+  setupEventListeners() {
+    // Screen navigation
+    document.getElementById('sign-in-btn')?.addEventListener('click', () => this.handleSignIn());
+    document.getElementById('sign-out-btn')?.addEventListener('click', () => this.handleSignOut());
+    document.getElementById('lock-btn')?.addEventListener('click', () => this.handleLock());
+    
+    // Search functionality
+    const searchInput = document.getElementById('search-input');
+    searchInput?.addEventListener('input', (e) => this.handleSearch(e.target.value));
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        this.handleSearchEnter();
+      }
+    });
+    
+    // Quick actions
+    document.getElementById('generate-password-btn')?.addEventListener('click', () => this.showPasswordGenerator());
+    document.getElementById('open-app-btn')?.addEventListener('click', () => this.openMainApp());
+    document.getElementById('add-btn')?.addEventListener('click', () => this.showAddPasswordModal());
+    document.getElementById('empty-add-btn')?.addEventListener('click', () => this.showAddPasswordModal());
+    
+    // Settings and sync
+    document.getElementById('settings-btn')?.addEventListener('click', () => this.openSettings());
+    document.getElementById('sync-btn')?.addEventListener('click', () => this.handleSync());
+    document.getElementById('refresh-page-btn')?.addEventListener('click', () => this.refreshPageInfo());
+    
+    // Password generator modal
+    document.getElementById('close-generator-btn')?.addEventListener('click', () => this.hidePasswordGenerator());
+    document.getElementById('copy-password-btn')?.addEventListener('click', () => this.copyGeneratedPassword());
+    document.getElementById('regenerate-btn')?.addEventListener('click', () => this.generateNewPassword());
+    document.getElementById('use-password-btn')?.addEventListener('click', () => this.useGeneratedPassword());
+    
+    // Generator options
+    document.getElementById('length-slider')?.addEventListener('input', (e) => this.updatePasswordLength(e.target.value));
+    document.querySelectorAll('#generator-modal input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', () => this.generateNewPassword());
+    });
+    
+    // Add password modal
+    document.getElementById('close-add-btn')?.addEventListener('click', () => this.hideAddPasswordModal());
+    document.getElementById('cancel-add-btn')?.addEventListener('click', () => this.hideAddPasswordModal());
+    document.getElementById('add-password-form')?.addEventListener('submit', (e) => this.handleAddPassword(e));
+    document.getElementById('toggle-password-btn')?.addEventListener('click', () => this.togglePasswordVisibility());
+    document.getElementById('generate-for-add-btn')?.addEventListener('click', () => this.generatePasswordForAdd());
+    
+    // Modal backdrop clicks
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          this.hideAllModals();
+        }
+      });
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
+  }
+
+  setupTouchHandlers() {
+    // Add touch support for better mobile experience
+    document.addEventListener('touchstart', (e) => {
+      this.touchStartY = e.touches[0].clientY;
+      this.touchStartX = e.touches[0].clientX;
+      this.isScrolling = false;
+    }, { passive: true });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (!this.touchStartY || !this.touchStartX) return;
+      
+      const touchY = e.touches[0].clientY;
+      const touchX = e.touches[0].clientX;
+      const diffY = this.touchStartY - touchY;
+      const diffX = this.touchStartX - touchX;
+      
+      if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 10) {
+        this.isScrolling = true;
+      }
+    }, { passive: true });
+    
+    // Add haptic feedback for supported devices
+    document.querySelectorAll('.btn, .icon-btn, .password-item').forEach(element => {
+      element.addEventListener('touchstart', () => {
+        if ('vibrate' in navigator) {
+          navigator.vibrate(10);
+        }
+      }, { passive: true });
+    });
+  }
+
+  async getCurrentTab() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      this.currentTab = tab;
+      this.updatePageInfo();
+    } catch (error) {
+      console.error('Failed to get current tab:', error);
+    }
+  }
+
+  async checkAuthStatus() {
+    try {
+      const result = await chrome.storage.local.get(['isAuthenticated', 'currentUser']);
+      this.isAuthenticated = result.isAuthenticated || false;
+      this.currentUser = result.currentUser || null;
+      
+      if (this.isAuthenticated && this.currentUser) {
+        this.updateUserInfo();
+      }
+    } catch (error) {
+      console.error('Failed to check auth status:', error);
+      this.isAuthenticated = false;
+    }
+  }
+
+  async handleSignIn() {
+    try {
+      this.showLoading('Signing in...');
+      
+      // Send message to background script to handle authentication
+      const response = await chrome.runtime.sendMessage({
+        action: 'authenticate',
+        provider: 'google'
+      });
+      
+      if (response.success) {
+        this.isAuthenticated = true;
+        this.currentUser = response.user;
+        await this.loadPasswords();
+        this.updateUserInfo();
+        this.showScreen('main');
+        this.showNotification('Successfully signed in!', 'success');
+      } else {
+        throw new Error(response.error || 'Authentication failed');
+      }
+    } catch (error) {
+      console.error('Sign in failed:', error);
+      this.showNotification('Sign in failed. Please try again.', 'error');
+      this.showScreen('auth');
+    }
+  }
+
+  async handleSignOut() {
+    try {
+      await chrome.runtime.sendMessage({ action: 'signOut' });
+      this.isAuthenticated = false;
+      this.currentUser = null;
+      this.passwords = [];
+      this.filteredPasswords = [];
+      this.showScreen('auth');
+      this.showNotification('Successfully signed out!', 'success');
+    } catch (error) {
+      console.error('Sign out failed:', error);
+      this.showNotification('Sign out failed', 'error');
+    }
+  }
+
+  handleLock() {
+    this.isAuthenticated = false;
+    this.passwords = [];
+    this.filteredPasswords = [];
+    chrome.storage.local.set({ isAuthenticated: false });
+    this.showScreen('auth');
+    this.showNotification('Extension locked', 'info');
+  }
+
+  async loadPasswords() {
+    try {
+      this.showLoading('Loading passwords...');
+      
+      const response = await chrome.runtime.sendMessage({
+        action: 'getPasswords',
+        userId: this.currentUser?.uid
+      });
+      
+      if (response.success) {
+        this.passwords = response.passwords || [];
+        this.filteredPasswords = [...this.passwords];
+        this.updatePasswordsList();
+        this.updatePasswordsCount();
+      } else {
+        throw new Error(response.error || 'Failed to load passwords');
+      }
+    } catch (error) {
+      console.error('Failed to load passwords:', error);
+      this.showNotification('Failed to load passwords', 'error');
+    }
+  }
+
+  handleSearch(query) {
+    this.searchQuery = query.toLowerCase();
+    
+    if (!query.trim()) {
+      this.filteredPasswords = [...this.passwords];
+    } else {
+      this.filteredPasswords = this.passwords.filter(password => 
+        password.siteName?.toLowerCase().includes(this.searchQuery) ||
+        password.username?.toLowerCase().includes(this.searchQuery) ||
+        password.url?.toLowerCase().includes(this.searchQuery)
+      );
+    }
+    
+    this.updatePasswordsList();
+    this.updatePasswordsCount();
+  }
+
+  handleSearchEnter() {
+    if (this.filteredPasswords.length === 1) {
+      this.selectPassword(this.filteredPasswords[0]);
+    }
+  }
+
+  updatePasswordsList() {
+    const container = document.getElementById('passwords-content');
+    const emptyState = document.getElementById('empty-state');
+    
+    if (!container) return;
+    
+    if (this.filteredPasswords.length === 0) {
+      container.innerHTML = '';
+      emptyState?.classList.remove('hidden');
+      return;
+    }
+    
+    emptyState?.classList.add('hidden');
+    
+    container.innerHTML = this.filteredPasswords.map(password => `
+      <div class="password-item" data-id="${password.id}" onclick="popupManager.selectPassword('${password.id}')">
+        <div class="password-icon">
+          ${this.getPasswordIcon(password.siteName)}
+        </div>
+        <div class="password-details">
+          <div class="password-name">${this.escapeHtml(password.siteName || 'Untitled')}</div>
+          <div class="password-username">${this.escapeHtml(password.username || 'No username')}</div>
+        </div>
+        <div class="password-actions">
+          <button class="icon-btn" onclick="event.stopPropagation(); popupManager.copyPassword('${password.id}')" title="Copy password">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <button class="icon-btn" onclick="event.stopPropagation(); popupManager.fillPassword('${password.id}')" title="Auto-fill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  updatePasswordsCount() {
+    const countElement = document.getElementById('passwords-count');
+    if (countElement) {
+      countElement.textContent = this.filteredPasswords.length;
+    }
+  }
+
+  getPasswordIcon(siteName) {
+    if (!siteName) return '?';
+    return siteName.charAt(0).toUpperCase();
+  }
+
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  async selectPassword(passwordId) {
+    const password = this.passwords.find(p => p.id === passwordId);
+    if (!password) return;
+    
+    try {
+      // Auto-fill the password on the current page
+      await this.fillPassword(passwordId);
+      
+      // Close popup after successful fill
+      setTimeout(() => window.close(), 500);
+    } catch (error) {
+      console.error('Failed to select password:', error);
+      this.showNotification('Failed to fill password', 'error');
+    }
+  }
+
+  async copyPassword(passwordId) {
+    const password = this.passwords.find(p => p.id === passwordId);
+    if (!password) return;
+    
+    try {
+      await navigator.clipboard.writeText(password.password);
+      this.showNotification('Password copied to clipboard!', 'success');
+      
+      // Add haptic feedback
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
+    } catch (error) {
+      console.error('Failed to copy password:', error);
+      this.showNotification('Failed to copy password', 'error');
+    }
+  }
+
+  async fillPassword(passwordId) {
+    const password = this.passwords.find(p => p.id === passwordId);
+    if (!password || !this.currentTab) return;
+    
+    try {
+      await chrome.tabs.sendMessage(this.currentTab.id, {
+        action: 'fillPassword',
+        password: password
+      });
+      
+      this.showNotification('Password filled successfully!', 'success');
+      
+      // Log activity
+      chrome.runtime.sendMessage({
+        action: 'logActivity',
+        activity: {
+          type: 'password_filled',
+          passwordId: passwordId,
+          url: this.currentTab.url,
+          timestamp: Date.now()
+        }
+      });
+    } catch (error) {
+      console.error('Failed to fill password:', error);
+      this.showNotification('Failed to fill password', 'error');
+    }
+  }
+
+  showPasswordGenerator() {
+    const modal = document.getElementById('generator-modal');
+    modal?.classList.add('active');
+    this.generateNewPassword();
+  }
+
+  hidePasswordGenerator() {
+    const modal = document.getElementById('generator-modal');
+    modal?.classList.remove('active');
+  }
+
+  generateNewPassword() {
+    const length = parseInt(document.getElementById('length-slider')?.value || '16');
+    const uppercase = document.getElementById('uppercase-check')?.checked || false;
+    const lowercase = document.getElementById('lowercase-check')?.checked || false;
+    const numbers = document.getElementById('numbers-check')?.checked || false;
+    const symbols = document.getElementById('symbols-check')?.checked || false;
+    
+    const password = this.generatePassword({
+      length,
+      uppercase,
+      lowercase,
+      numbers,
+      symbols
+    });
+    
+    const input = document.getElementById('generated-password-input');
+    if (input) {
+      input.value = password;
+    }
+    
+    this.updatePasswordStrength(password);
+  }
+
+  generatePassword(options) {
+    let charset = '';
+    if (options.lowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
+    if (options.uppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (options.numbers) charset += '0123456789';
+    if (options.symbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    
+    if (!charset) charset = 'abcdefghijklmnopqrstuvwxyz';
+    
+    let password = '';
+    for (let i = 0; i < options.length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    
+    return password;
+  }
+
+  updatePasswordLength(length) {
+    const valueElement = document.getElementById('length-value');
+    if (valueElement) {
+      valueElement.textContent = length;
+    }
+    this.generateNewPassword();
+  }
+
+  updatePasswordStrength(password) {
+    const strength = this.calculatePasswordStrength(password);
+    const indicator = document.getElementById('strength-indicator');
+    const text = document.getElementById('strength-text');
+    
+    if (indicator && text) {
+      indicator.className = `strength-fill ${strength.level}`;
+      text.textContent = strength.label;
+      text.className = `strength-text ${strength.level}`;
+    }
+  }
+
+  calculatePasswordStrength(password) {
+    let score = 0;
+    
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    
+    if (score < 3) return { level: 'weak', label: 'Weak' };
+    if (score < 5) return { level: 'fair', label: 'Fair' };
+    if (score < 6) return { level: 'good', label: 'Good' };
+    return { level: 'strong', label: 'Strong' };
+  }
+
+  async copyGeneratedPassword() {
+    const input = document.getElementById('generated-password-input');
+    if (!input?.value) return;
+    
+    try {
+      await navigator.clipboard.writeText(input.value);
+      this.showNotification('Password copied to clipboard!', 'success');
+    } catch (error) {
+      console.error('Failed to copy password:', error);
+      this.showNotification('Failed to copy password', 'error');
+    }
+  }
+
+  async useGeneratedPassword() {
+    const input = document.getElementById('generated-password-input');
+    if (!input?.value || !this.currentTab) return;
+    
+    try {
+      await chrome.tabs.sendMessage(this.currentTab.id, {
+        action: 'fillGeneratedPassword',
+        password: input.value
+      });
+      
+      this.hidePasswordGenerator();
+      this.showNotification('Password filled successfully!', 'success');
+      setTimeout(() => window.close(), 500);
+    } catch (error) {
+      console.error('Failed to use generated password:', error);
+      this.showNotification('Failed to fill password', 'error');
+    }
+  }
+
+  showAddPasswordModal() {
+    const modal = document.getElementById('add-password-modal');
+    modal?.classList.add('active');
+    
+    // Pre-fill URL if available
+    const urlInput = document.getElementById('site-url');
+    if (urlInput && this.currentTab?.url) {
+      urlInput.value = this.currentTab.url;
+    }
+    
+    // Pre-fill site name from URL
+    const siteNameInput = document.getElementById('site-name');
+    if (siteNameInput && this.currentTab?.url) {
+      try {
+        const url = new URL(this.currentTab.url);
+        siteNameInput.value = url.hostname.replace('www.', '');
+      } catch (error) {
+        // Invalid URL, ignore
+      }
+    }
+  }
+
+  hideAddPasswordModal() {
+    const modal = document.getElementById('add-password-modal');
+    modal?.classList.remove('active');
+    
+    // Reset form
+    const form = document.getElementById('add-password-form');
+    form?.reset();
+  }
+
+  async handleAddPassword(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const password = {
+      siteName: formData.get('site-name'),
+      url: formData.get('site-url'),
+      username: formData.get('username'),
+      password: formData.get('password'),
+      notes: formData.get('notes'),
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    
+    try {
+      this.showLoading('Saving password...');
+      
+      const response = await chrome.runtime.sendMessage({
+        action: 'addPassword',
+        password: password,
+        userId: this.currentUser?.uid
+      });
+      
+      if (response.success) {
+        this.hideAddPasswordModal();
+        await this.loadPasswords();
+        this.showNotification('Password saved successfully!', 'success');
+      } else {
+        throw new Error(response.error || 'Failed to save password');
+      }
+    } catch (error) {
+      console.error('Failed to add password:', error);
+      this.showNotification('Failed to save password', 'error');
+    }
+  }
+
+  togglePasswordVisibility() {
+    const input = document.getElementById('password');
+    const button = document.getElementById('toggle-password-btn');
+    
+    if (input && button) {
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      
+      button.innerHTML = isPassword ? 
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>` :
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>`;
+    }
+  }
+
+  generatePasswordForAdd() {
+    const password = this.generatePassword({
+      length: 16,
+      uppercase: true,
+      lowercase: true,
+      numbers: true,
+      symbols: true
+    });
+    
+    const input = document.getElementById('password');
+    if (input) {
+      input.value = password;
+      input.type = 'text';
+    }
+  }
+
+  hideAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.classList.remove('active');
+    });
+  }
+
+  async handleSync() {
+    try {
+      this.showLoading('Syncing...');
+      
+      const response = await chrome.runtime.sendMessage({
+        action: 'syncData',
+        userId: this.currentUser?.uid
+      });
+      
+      if (response.success) {
+        await this.loadPasswords();
+        this.showNotification('Sync completed successfully!', 'success');
+      } else {
+        throw new Error(response.error || 'Sync failed');
+      }
+    } catch (error) {
+      console.error('Sync failed:', error);
+      this.showNotification('Sync failed', 'error');
+    }
+  }
+
+  openMainApp() {
+    chrome.tabs.create({ url: 'https://linkcrypta.app' });
+  }
+
+  openSettings() {
+    chrome.runtime.openOptionsPage();
+  }
+
+  updatePageInfo() {
+    const container = document.getElementById('page-details');
+    if (!container || !this.currentTab) return;
+    
+    const url = new URL(this.currentTab.url || 'about:blank');
+    const matchingPasswords = this.passwords.filter(p => 
+      p.url && p.url.includes(url.hostname)
+    );
+    
+    container.innerHTML = `
+      <div class="page-detail">
+        <span class="page-detail-label">Domain:</span>
+        <span class="page-detail-value">${url.hostname}</span>
+      </div>
+      <div class="page-detail">
+        <span class="page-detail-label">Matches:</span>
+        <span class="page-detail-value">${matchingPasswords.length} password(s)</span>
+      </div>
+      <div class="page-detail">
+        <span class="page-detail-label">Status:</span>
+        <span class="page-detail-value">${url.protocol === 'https:' ? '🔒 Secure' : '⚠️ Not secure'}</span>
+      </div>
+    `;
+  }
+
+  refreshPageInfo() {
+    this.getCurrentTab();
+  }
+
+  updateUserInfo() {
+    const userInfo = document.getElementById('user-info');
+    if (userInfo && this.currentUser) {
+      userInfo.textContent = this.currentUser.email || this.currentUser.displayName || 'User';
+    }
+  }
+
+  showScreen(screenName) {
+    document.querySelectorAll('.screen').forEach(screen => {
+      screen.classList.remove('active');
+    });
+    
+    const targetScreen = document.getElementById(`${screenName}-screen`);
+    if (targetScreen) {
+      targetScreen.classList.add('active');
+      targetScreen.classList.add('fade-in');
+    }
+    
+    this.currentScreen = screenName;
+  }
+
+  showLoading(message = 'Loading...') {
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingText = loadingScreen?.querySelector('p');
+    
+    if (loadingText) {
+      loadingText.textContent = message;
+    }
+    
+    this.showScreen('loading');
+  }
+
+  showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    // Style the notification
+    Object.assign(notification.style, {
+      position: 'fixed',
+      top: '1rem',
+      right: '1rem',
+      padding: '0.75rem 1rem',
+      borderRadius: '0.5rem',
+      color: 'white',
+      fontSize: '0.875rem',
+      fontWeight: '500',
+      zIndex: '9999',
+      transform: 'translateX(100%)',
+      transition: 'transform 0.3s ease-in-out',
+      backgroundColor: type === 'success' ? '#10b981' : 
+                      type === 'error' ? '#ef4444' : 
+                      type === 'warning' ? '#f59e0b' : '#3b82f6'
+    });
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+      notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after delay
+    setTimeout(() => {
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
+  }
+
+  handleKeyboardShortcuts(event) {
+    // Ctrl/Cmd + K for search focus
+    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      event.preventDefault();
+      document.getElementById('search-input')?.focus();
+    }
+    
+    // Escape to close modals
+    if (event.key === 'Escape') {
+      this.hideAllModals();
+    }
+    
+    // Enter to select first password
+    if (event.key === 'Enter' && event.target.id === 'search-input') {
+      this.handleSearchEnter();
+    }
+  }
+}
+
+// Initialize popup when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  window.popupManager = new PopupManager();
+});
+
+// Handle popup unload
+window.addEventListener('beforeunload', () => {
+  // Clean up any ongoing operations
+  if (window.popupManager) {
+    // Save any pending state
+  }
+});

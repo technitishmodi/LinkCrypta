@@ -98,7 +98,7 @@ class LinkCryptaApp extends StatelessWidget {
             builder: (context, child) {
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(
-                  textScaleFactor: textScaleFactor,
+                  textScaler: TextScaler.linear(textScaleFactor),
                 ),
                 child: child!,
               );

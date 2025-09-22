@@ -195,6 +195,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   List<LinkEntry> get allLinks => _links;
+  List<PasswordEntry> get allPasswords => _passwords;
 
 
   List<PasswordEntry> _getFilteredPasswords() {

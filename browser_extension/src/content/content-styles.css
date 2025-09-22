@@ -1,0 +1,381 @@
+/* LinkCrypta Extension Content Styles */
+
+/* Suggestion Popup Styles */
+.linkcrypta-suggestions {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 400px;
+  overflow: hidden;
+  z-index: 2147483647;
+}
+
+.linkcrypta-suggestions-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #6C63FF, #4D8AF0);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.linkcrypta-suggestions-header img {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.linkcrypta-suggestions-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.linkcrypta-suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.linkcrypta-suggestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.linkcrypta-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.linkcrypta-suggestion-icon {
+  margin-right: 12px;
+}
+
+.linkcrypta-favicon {
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 2px;
+}
+
+.linkcrypta-suggestion-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.linkcrypta-suggestion-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linkcrypta-suggestion-username {
+  font-size: 12px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linkcrypta-suggestion-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.linkcrypta-fill-btn,
+.linkcrypta-copy-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.linkcrypta-fill-btn:hover {
+  background: #6C63FF;
+  color: white;
+  border-color: #6C63FF;
+}
+
+.linkcrypta-copy-btn:hover {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.linkcrypta-suggestions-footer {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 8px;
+}
+
+.linkcrypta-generate-btn,
+.linkcrypta-open-app-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.linkcrypta-generate-btn:hover {
+  background: #ff6b6b;
+  color: white;
+  border-color: #ff6b6b;
+}
+
+.linkcrypta-open-app-btn:hover {
+  background: #6C63FF;
+  color: white;
+  border-color: #6C63FF;
+}
+
+/* Save Credentials Prompt */
+.linkcrypta-save-prompt {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 350px;
+  overflow: hidden;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.linkcrypta-save-content {
+  padding: 0;
+}
+
+.linkcrypta-save-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #6C63FF, #4D8AF0);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.linkcrypta-save-header img {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.linkcrypta-save-details {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.linkcrypta-save-details div {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linkcrypta-save-details div:last-child {
+  margin-bottom: 0;
+}
+
+.linkcrypta-save-actions {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linkcrypta-save-yes,
+.linkcrypta-save-no,
+.linkcrypta-save-never {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.linkcrypta-save-yes {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.linkcrypta-save-yes:hover {
+  background: #218838;
+  border-color: #218838;
+}
+
+.linkcrypta-save-no:hover {
+  background: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.linkcrypta-save-never:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+/* Notification Styles */
+.linkcrypta-notification {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  animation: slideInRight 0.3s ease-out;
+  transition: opacity 0.3s ease-out;
+}
+
+.linkcrypta-notification-success {
+  background: #28a745 !important;
+}
+
+.linkcrypta-notification-error {
+  background: #dc3545 !important;
+}
+
+.linkcrypta-notification-info {
+  background: #007bff !important;
+}
+
+/* Form Detection Indicator */
+form[data-linkcrypta-detected="true"] {
+  position: relative;
+}
+
+form[data-linkcrypta-detected="true"]::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #6C63FF, #4D8AF0);
+  border-radius: 6px;
+  z-index: -1;
+  animation: linkCryptaGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes linkCryptaGlow {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 0.6;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .linkcrypta-suggestions {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: white;
+  }
+
+  .linkcrypta-suggestion-item {
+    border-bottom-color: #4a5568;
+  }
+
+  .linkcrypta-suggestion-item:hover {
+    background-color: #4a5568;
+  }
+
+  .linkcrypta-suggestion-name {
+    color: white;
+  }
+
+  .linkcrypta-suggestion-username {
+    color: #a0aec0;
+  }
+
+  .linkcrypta-fill-btn,
+  .linkcrypta-copy-btn,
+  .linkcrypta-generate-btn,
+  .linkcrypta-open-app-btn {
+    background: #4a5568;
+    border-color: #718096;
+    color: white;
+  }
+
+  .linkcrypta-suggestions-footer {
+    background: #4a5568;
+    border-top-color: #718096;
+  }
+
+  .linkcrypta-save-prompt {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: white;
+  }
+
+  .linkcrypta-save-details div {
+    color: #a0aec0;
+  }
+
+  .linkcrypta-save-no,
+  .linkcrypta-save-never {
+    background: #4a5568;
+    border-color: #718096;
+    color: white;
+  }
+}
+
+/* Accessibility */
+.linkcrypta-suggestions *:focus,
+.linkcrypta-save-prompt *:focus {
+  outline: 2px solid #6C63FF;
+  outline-offset: 2px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .linkcrypta-suggestions,
+  .linkcrypta-save-prompt {
+    max-width: calc(100vw - 40px);
+    margin: 0 20px;
+  }
+
+  .linkcrypta-suggestion-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .linkcrypta-suggestions-footer {
+    flex-direction: column;
+  }
+}

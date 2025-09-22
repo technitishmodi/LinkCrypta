@@ -500,7 +500,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       children: [
         _buildStatCard(
           title: 'Passwords',
-          value: dataProvider.passwords.length.toString(),
+          value: dataProvider.allPasswords.length.toString(),
           icon: Icons.lock_outline,
           gradient: [_colors['cardGradient1']!, _colors['cardGradient2']!],
           context: context,
@@ -513,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         )),
         _buildStatCard(
           title: 'Links',
-          value: dataProvider.links.length.toString(),
+          value: dataProvider.allLinks.length.toString(),
           icon: Icons.link,
           gradient: [_colors['cardGradient3']!, _colors['cardGradient4']!],
           context: context,
@@ -526,8 +526,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         )),
         _buildStatCard(
           title: 'Favorites',
-          value: (dataProvider.passwords.where((p) => p.isFavorite).length +
-                  dataProvider.links.where((l) => l.isFavorite).length).toString(),
+          value: (dataProvider.allPasswords.where((p) => p.isFavorite).length +
+                  dataProvider.allLinks.where((l) => l.isFavorite).length).toString(),
           icon: Icons.favorite_border,
           gradient: [_colors['accent']!, _colors['primary']!],
           context: context,
@@ -544,7 +544,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Expanded(
           child: _buildStatCard(
             title: 'Passwords',
-            value: dataProvider.passwords.length.toString(),
+            value: dataProvider.allPasswords.length.toString(),
             icon: Icons.lock_outline,
             gradient: [_colors['cardGradient1']!, _colors['cardGradient2']!],
             context: context,
@@ -559,7 +559,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Expanded(
           child: _buildStatCard(
             title: 'Links',
-            value: dataProvider.links.length.toString(),
+            value: dataProvider.allLinks.length.toString(),
             icon: Icons.link,
             gradient: [_colors['cardGradient3']!, _colors['cardGradient4']!],
             context: context,
@@ -574,8 +574,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Expanded(
           child: _buildStatCard(
             title: 'Favorites',
-            value: (dataProvider.passwords.where((p) => p.isFavorite).length +
-                    dataProvider.links.where((l) => l.isFavorite).length).toString(),
+            value: (dataProvider.allPasswords.where((p) => p.isFavorite).length +
+                    dataProvider.allLinks.where((l) => l.isFavorite).length).toString(),
             icon: Icons.favorite_border,
             gradient: [_colors['accent']!, _colors['primary']!],
             context: context,

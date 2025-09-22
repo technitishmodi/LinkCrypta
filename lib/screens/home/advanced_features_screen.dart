@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/data_provider.dart';
-import '../../utils/responsive.dart';
 import 'password_health_dashboard_screen.dart';
 import 'advanced_password_generator_screen.dart';
 import 'analytics_dashboard_screen.dart';

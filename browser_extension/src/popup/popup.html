@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#2563eb">
+  <title>LinkCrypta</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen active">
+      <div class="loading-content">
+        <div class="logo">
+          <img src="../../icons/icon-48.png" alt="LinkCrypta">
+        </div>
+        <div class="loading-spinner"></div>
+        <p>Loading LinkCrypta...</p>
+      </div>
+    </div>
+
+    <!-- Authentication Screen -->
+    <div id="auth-screen" class="screen">
+      <div class="auth-content">
+        <div class="logo">
+          <img src="../../icons/icon-48.png" alt="LinkCrypta">
+          <h1>LinkCrypta</h1>
+          <p>Secure Password Manager</p>
+        </div>
+        <div class="auth-actions">
+          <button id="sign-in-btn" class="btn btn-primary">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjY0IDkuMjA0NTVDMTcuNjQgOC41NjYzNiAxNy41ODI3IDcuOTUyNzMgMTcuNDc2NCA3LjM2MzY0SDE5VjE5LjYzNjRIMTcuNDc2NFYxMS4wOTA5QzE2LjgzIDEwLjQ0IDE1Ljg4IDE5LjgyNzMgMTMuOCA5LjA0NTQ1QzExLjcyIDguMjYzNjQgOS4zNiA5LjA0NTQ1IDguNDggMTEuMDkwOUM3LjYgMTMuMTM2NCA3LjYgMTUuNTkwOSA4LjQ4IDE3LjYzNjRDOS4zNiAxOS42ODE4IDExLjcyIDIwLjQ2MzYgMTMuOCAxOS42ODE4QzE1Ljg4IDE4LjkgMTYuODMgMTcuNjM2NCAxNy40NzY0IDE2Ljk4NjRWMTkuNjM2NEgxN1Y5LjIwNDU1WiIgZmlsbD0iIzQyODVGNCIvPgo8L3N2Zz4K" alt="Google">
+            Sign in with Google
+          </button>
+          <p class="auth-note">Sign in to sync with your LinkCrypta app</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Screen -->
+    <div id="main-screen" class="screen">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <img src="../../icons/icon-16.png" alt="LinkCrypta" class="header-logo">
+          <h2>LinkCrypta</h2>
+        </div>
+        <div class="header-right">
+          <button id="settings-btn" class="icon-btn" title="Settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"></path>
+            </svg>
+          </button>
+          <button id="lock-btn" class="icon-btn" title="Lock Extension">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="16" r="1"></circle>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search passwords and links..." autocomplete="off">
+        <button id="add-btn" class="icon-btn add-btn" title="Add Password">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button id="generate-password-btn" class="quick-action-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          Generate Password
+        </button>
+        <button id="open-app-btn" class="quick-action-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15,3 21,3 21,9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          Open App
+        </button>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content">
+        <!-- Passwords List -->
+        <div id="passwords-list" class="list-container">
+          <div class="list-header">
+            <h3>Passwords</h3>
+            <span id="passwords-count" class="count">0</span>
+          </div>
+          <div id="passwords-content" class="list-content">
+            <!-- Passwords will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="16" r="1"></circle>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h3>No passwords found</h3>
+          <p>Add your first password or sync with your LinkCrypta app</p>
+          <button id="empty-add-btn" class="btn btn-primary">Add Password</button>
+        </div>
+
+        <!-- Current Page Info -->
+        <div id="page-info" class="page-info">
+          <div class="page-header">
+            <h3>Current Page</h3>
+            <button id="refresh-page-btn" class="icon-btn" title="Refresh">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23,4 23,10 17,10"></polyline>
+                <polyline points="1,20 1,14 7,14"></polyline>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+              </svg>
+            </button>
+          </div>
+          <div id="page-details" class="page-details">
+            <!-- Page details will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <button id="sync-btn" class="footer-btn" title="Sync with app">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23,4 23,10 17,10"></polyline>
+            <polyline points="1,20 1,14 7,14"></polyline>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+          </svg>
+          Sync
+        </button>
+        <span id="user-info" class="user-info"></span>
+        <button id="sign-out-btn" class="footer-btn" title="Sign out">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16,17 21,12 16,7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Sign Out
+        </button>
+      </div>
+    </div>
+
+    <!-- Password Generator Modal -->
+    <div id="generator-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Password Generator</h3>
+          <button id="close-generator-btn" class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="generated-password">
+            <input type="text" id="generated-password-input" readonly>
+            <button id="copy-password-btn" class="icon-btn" title="Copy">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="password-strength">
+            <div class="strength-bar">
+              <div id="strength-indicator" class="strength-fill"></div>
+            </div>
+            <span id="strength-text" class="strength-text">Strong</span>
+          </div>
+          <div class="generator-options">
+            <div class="option-row">
+              <label for="length-slider">Length: <span id="length-value">16</span></label>
+              <input type="range" id="length-slider" min="8" max="32" value="16">
+            </div>
+            <div class="option-row">
+              <label>
+                <input type="checkbox" id="uppercase-check" checked>
+                Uppercase (A-Z)
+              </label>
+            </div>
+            <div class="option-row">
+              <label>
+                <input type="checkbox" id="lowercase-check" checked>
+                Lowercase (a-z)
+              </label>
+            </div>
+            <div class="option-row">
+              <label>
+                <input type="checkbox" id="numbers-check" checked>
+                Numbers (0-9)
+              </label>
+            </div>
+            <div class="option-row">
+              <label>
+                <input type="checkbox" id="symbols-check" checked>
+                Symbols (!@#$...)
+              </label>
+            </div>
+          </div>
+          <div class="generator-actions">
+            <button id="regenerate-btn" class="btn btn-secondary">Generate New</button>
+            <button id="use-password-btn" class="btn btn-primary">Use Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Password Modal -->
+    <div id="add-password-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add Password</h3>
+          <button id="close-add-btn" class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="add-password-form">
+            <div class="form-group">
+              <label for="site-name">Site Name</label>
+              <input type="text" id="site-name" required>
+            </div>
+            <div class="form-group">
+              <label for="site-url">URL</label>
+              <input type="url" id="site-url">
+            </div>
+            <div class="form-group">
+              <label for="username">Username/Email</label>
+              <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <div class="password-input-group">
+                <input type="password" id="password" required>
+                <button type="button" id="toggle-password-btn" class="icon-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <button type="button" id="generate-for-add-btn" class="icon-btn" title="Generate Password">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23,4 23,10 17,10"></polyline>
+                    <polyline points="1,20 1,14 7,14"></polyline>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="notes">Notes (Optional)</label>
+              <textarea id="notes" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="cancel-add-btn" class="btn btn-secondary">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/config.js"></script>
+  <script src="../shared/crypto.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
