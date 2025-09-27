@@ -11,6 +11,7 @@ import 'services/encryption_service.dart';
 import 'services/storage_service.dart';
 import 'services/sync_service.dart';
 import 'services/activity_log_service.dart';
+import 'services/autofill_framework_service.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -49,8 +50,47 @@ void main() async {
   }
 }
 
-class LinkCryptaApp extends StatelessWidget {
+class LinkCryptaApp extends StatefulWidget {
   const LinkCryptaApp({super.key});
+
+  @override
+  State<LinkCryptaApp> createState() => _LinkCryptaAppState();
+}
+
+class _LinkCryptaAppState extends State<LinkCryptaApp> with WidgetsBindingObserver {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // When the app resumes, attempt to import any new credentials saved by the
+      // Android Autofill Service so they show up in the app without manual steps.
+      try {
+        final navContext = _navigatorKey.currentContext;
+        if (navContext != null) {
+          final dataProvider = Provider.of<DataProvider>(navContext, listen: false);
+          AutofillFrameworkService.instance.forceImportNewCredentials(dataProvider).catchError((e) {
+          // Log error, but don't crash on lifecycle events
+          print('Lifecycle importNewCredentials error: $e');
+          });
+        }
+      } catch (e) {
+        print('Error triggering autofill import on resume: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +130,7 @@ class LinkCryptaApp extends StatelessWidget {
           );
           
           return MaterialApp(
+            navigatorKey: _navigatorKey,
             title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
             theme: modifiedLightTheme,

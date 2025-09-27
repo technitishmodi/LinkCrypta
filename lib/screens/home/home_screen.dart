@@ -259,9 +259,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required IconData icon,
     required List<Color> gradient,
     required BuildContext context,
+    double? width,
   }) {
     return Container(
-      width: ResponsiveBreakpoints.responsive<double>(
+      width: width ?? ResponsiveBreakpoints.responsive<double>(
         context,
         mobile: 120,
         tablet: 140,
@@ -495,44 +496,61 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // Mobile stats scroll (horizontal)
   Widget _buildMobileStatsScroll(DataProvider dataProvider) {
-    return ListView(
-      scrollDirection: Axis.horizontal,
-      children: [
-        _buildStatCard(
-          title: 'Passwords',
-          value: dataProvider.allPasswords.length.toString(),
-          icon: Icons.lock_outline,
-          gradient: [_colors['cardGradient1']!, _colors['cardGradient2']!],
-          context: context,
-        ),
-        SizedBox(width: ResponsiveBreakpoints.responsive<double>(
+    // Non-scrollable layout: divide available width between three cards
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final gap = ResponsiveBreakpoints.responsive<double>(
           context,
           mobile: 8,
           tablet: 12,
           desktop: 16,
-        )),
-        _buildStatCard(
-          title: 'Links',
-          value: dataProvider.allLinks.length.toString(),
-          icon: Icons.link,
-          gradient: [_colors['cardGradient3']!, _colors['cardGradient4']!],
-          context: context,
-        ),
-        SizedBox(width: ResponsiveBreakpoints.responsive<double>(
-          context,
-          mobile: 8,
-          tablet: 12,
-          desktop: 16,
-        )),
-        _buildStatCard(
-          title: 'Favorites',
-          value: (dataProvider.allPasswords.where((p) => p.isFavorite).length +
-                  dataProvider.allLinks.where((l) => l.isFavorite).length).toString(),
-          icon: Icons.favorite_border,
-          gradient: [_colors['accent']!, _colors['primary']!],
-          context: context,
-        ),
-      ],
+        );
+        // total gaps between 3 cards -> 2 gaps
+        final totalGaps = gap * 2;
+        final cardWidth = (constraints.maxWidth - totalGaps) / 3;
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: cardWidth,
+              child: _buildStatCard(
+                title: 'Passwords',
+                value: dataProvider.allPasswords.length.toString(),
+                icon: Icons.lock_outline,
+                gradient: [_colors['cardGradient1']!, _colors['cardGradient2']!],
+                context: context,
+                width: cardWidth,
+              ),
+            ),
+            SizedBox(width: gap),
+            SizedBox(
+              width: cardWidth,
+              child: _buildStatCard(
+                title: 'Links',
+                value: dataProvider.allLinks.length.toString(),
+                icon: Icons.link,
+                gradient: [_colors['cardGradient3']!, _colors['cardGradient4']!],
+                context: context,
+                width: cardWidth,
+              ),
+            ),
+            SizedBox(width: gap),
+            SizedBox(
+              width: cardWidth,
+              child: _buildStatCard(
+                title: 'Favorites',
+                value: (dataProvider.allPasswords.where((p) => p.isFavorite).length +
+                        dataProvider.allLinks.where((l) => l.isFavorite).length).toString(),
+                icon: Icons.favorite_border,
+                gradient: [_colors['accent']!, _colors['primary']!],
+                context: context,
+                width: cardWidth,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -14,6 +14,7 @@ import 'terms_of_service_screen.dart';
 import 'about_screen.dart';
 import 'password_activity_screen.dart';
 import 'password_activity_json_screen.dart';
+import 'autofill_service_screen.dart';
 
 // Modern Light Blue Color Scheme
 class ModernColors {
@@ -35,11 +36,27 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   bool _isLoading = false;
+  bool _autofillEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _getCurrentUser();
+    _checkAutofillStatus();
+  }
+
+  Future<void> _checkAutofillStatus() async {
+    try {
+      final enabled = await AutofillFrameworkService.instance.isAutofillServiceEnabled();
+      if (mounted) {
+        setState(() {
+          _autofillEnabled = enabled;
+        });
+      }
+    } catch (e) {
+      // ignore errors and keep default false
+      print('ProfileScreen: Error checking autofill status: $e');
+    }
   }
 
   void _getCurrentUser() {
@@ -389,6 +406,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   builder: (context) => const SecuritySettingsScreen(),
                 ),
               );
+            },
+          ),
+
+          // Autofill Service selection (LinkCrypta)
+          _buildSettingsItem(
+            context,
+            icon: Icons.auto_fix_high_rounded,
+            title: 'Autofill Service',
+            subtitle: _autofillEnabled
+                ? 'LinkCrypta is the selected autofill service'
+                : 'Not selected — tap to manage autofill service',
+            onTap: () async {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AutofillServiceScreen(),
+                ),
+              ).then((_) => _checkAutofillStatus());
             },
           ),
 

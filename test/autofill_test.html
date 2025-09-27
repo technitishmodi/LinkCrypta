@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Autofill Save Test</title>
+  </head>
+  <body>
+    <h2>Autofill Save Test</h2>
+    <p>This page has a simple login form with autocomplete attributes. Fill it and submit, then check whether the device offers to save the password (or whether LinkCrypta receives onSaveRequest).</p>
+    <form id="login" action="#" method="post" autocomplete="on">
+      <label for="u">Username</label>
+      <input id="u" name="username" autocomplete="username" placeholder="testuser@example.com" />
+      <br/><br/>
+      <label for="p">Password</label>
+      <input id="p" type="password" name="password" autocomplete="current-password" placeholder="password123" />
+      <br/><br/>
+      <button type="submit">Submit</button>
+    </form>
+    <script>
+      document.getElementById('login').addEventListener('submit', function(e){
+        e.preventDefault();
+        // show a small confirmation so user knows the form submitted
+        document.body.insertAdjacentHTML('beforeend','<p style="color:green">Form submitted — now switch back to the LinkCrypta app or watch for a save prompt.</p>');
+      });
+    </script>
+  </body>
+</html>
