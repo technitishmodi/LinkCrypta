@@ -5,7 +5,7 @@ import 'password_health_dashboard_screen.dart';
 import 'advanced_password_generator_screen.dart';
 import 'analytics_dashboard_screen.dart';
 import 'smart_autofill_screen.dart';
-import 'autofill_framework_screen.dart';
+import '../autofill_setup_screen.dart';
 
 class AdvancedFeaturesScreen extends StatelessWidget {
   const AdvancedFeaturesScreen({super.key});
@@ -285,14 +285,14 @@ class AdvancedFeaturesScreen extends StatelessWidget {
             Expanded(
               child: _buildFeatureCard(
                 context,
-                'Autofill Framework',
-                'System-level autofill across all Android apps',
+                'Autofill Setup',
+                'Configure system-level autofill for Chrome & apps',
                 Icons.auto_mode,
                 const Color(0xFFE91E63),
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const AutofillFrameworkScreen(),
+                    builder: (context) => const AutofillSetupScreen(),
                   ),
                 ),
               ),

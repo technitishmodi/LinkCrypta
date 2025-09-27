@@ -5,7 +5,7 @@ import 'package:encrypt/encrypt.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class EncryptionService {
-  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+  static final FlutterSecureStorage _storage = FlutterSecureStorage();
   static const String _keyName = 'linkcrypta_encryption_key';
   static const String _ivName = 'linkcrypta_encryption_iv';
   
@@ -21,19 +21,21 @@ class EncryptionService {
     if (_initialized) return;
 
     try {
-      // Get or generate encryption key
+      // Get stored encryption key and IV (may be null)
       String? keyString = await _storage.read(key: _keyName);
-      if (keyString == null) {
-        final key = Key.fromSecureRandom(32); // AES-256 = 32 bytes
-        keyString = key.base64;
-        await _storage.write(key: _keyName, value: keyString);
-      }
-
-      // Get or generate IV
       String? ivString = await _storage.read(key: _ivName);
-      if (ivString == null) {
-        final iv = IV.fromSecureRandom(16); // AES block size = 16 bytes
-        ivString = iv.base64;
+
+      // If missing, generate new secure random key (32 bytes) and IV (16 bytes)
+      if (keyString == null || ivString == null) {
+        final random = Random.secure();
+        final keyBytes = List<int>.generate(32, (_) => random.nextInt(256));
+        final ivBytes = List<int>.generate(16, (_) => random.nextInt(256));
+
+        keyString = base64Encode(keyBytes);
+        ivString = base64Encode(ivBytes);
+
+        // Persist securely
+        await _storage.write(key: _keyName, value: keyString);
         await _storage.write(key: _ivName, value: ivString);
       }
 

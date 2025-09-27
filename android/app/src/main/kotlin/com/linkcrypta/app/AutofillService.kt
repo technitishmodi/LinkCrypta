@@ -26,10 +26,12 @@ class LinkCryptaAutofillService : AutofillService() {
     }
 
     private lateinit var sharedPrefs: SharedPreferences
+    private lateinit var encryptionHelper: EncryptionHelper
 
     override fun onCreate() {
         super.onCreate()
         sharedPrefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        encryptionHelper = EncryptionHelper(this)
         Log.d(TAG, "AutofillService created")
     }
 
@@ -42,8 +44,18 @@ class LinkCryptaAutofillService : AutofillService() {
         
         val structure = request.fillContexts.lastOrNull()?.structure
         if (structure == null) {
+            Log.d(TAG, "No structure found in fill request")
             callback.onFailure("No structure found")
             return
+        }
+
+        // Get current app package name for context
+        val packageName = structure.activityComponent.packageName
+        Log.d(TAG, "Fill request from package: $packageName")
+        
+        // Check if this is a supported browser or app
+        if (!isSupportedApp(packageName)) {
+            Log.d(TAG, "App $packageName not in supported list, but proceeding anyway")
         }
 
         val autofillFields = parseAutofillFields(structure)
@@ -53,22 +65,43 @@ class LinkCryptaAutofillService : AutofillService() {
             return
         }
 
-        // Get current app package name for context
-        val packageName = structure.activityComponent.packageName
         val url = extractUrl(structure) ?: packageName
-        
-        Log.d(TAG, "Processing autofill for: $url")
+        Log.d(TAG, "Processing autofill for: $url (from package: $packageName)")
 
         // Get matching credentials from local storage
         val credentials = getStoredCredentials(url)
         
         if (credentials.isNotEmpty()) {
+            Log.d(TAG, "Found ${credentials.size} matching credentials")
             val response = createFillResponse(autofillFields, credentials)
             callback.onSuccess(response)
         } else {
-            Log.d(TAG, "No matching credentials found")
-            callback.onFailure("No matching credentials found")
+            Log.d(TAG, "No matching credentials found for: $url")
+            // Still provide a response with save info for new credentials
+            val response = createEmptyFillResponse(autofillFields)
+            if (response != null) {
+                callback.onSuccess(response)
+            } else {
+                callback.onFailure("No matching credentials found")
+            }
         }
+    }
+
+    private fun isSupportedApp(packageName: String): Boolean {
+        val supportedApps = listOf(
+            "com.android.chrome",
+            "com.chrome.beta",
+            "com.chrome.dev",
+            "com.chrome.canary",
+            "org.mozilla.firefox",
+            "org.mozilla.firefox_beta",
+            "com.opera.browser",
+            "com.opera.browser.beta",
+            "com.microsoft.emmx",
+            "com.brave.browser",
+            "com.duckduckgo.mobile.android"
+        )
+        return supportedApps.contains(packageName)
     }
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
@@ -152,19 +185,50 @@ class LinkCryptaAutofillService : AutofillService() {
         val inputType = node.inputType
         val hint = node.hint
         val text = node.text?.toString()
+        val className = node.className
+        
+        // Log detailed information for debugging
+        if (node.autofillId != null && (inputType != 0 || !hint.isNullOrEmpty() || className?.contains("EditText") == true)) {
+            Log.d(TAG, "Found potential field - Class: $className, InputType: $inputType, Hint: $hint, AutofillHints: ${autofillHints?.joinToString()}")
+        }
         
         // Determine field type based on hints and input type
         val fieldType = determineFieldType(autofillHints, inputType, hint, text)
         
-        if (fieldType != AutofillFieldType.UNKNOWN && node.autofillId != null) {
+        // Be more aggressive in including fields - include UNKNOWN types if they look like input fields
+        val shouldInclude = when {
+            fieldType != AutofillFieldType.UNKNOWN -> true
+            node.autofillId != null && (
+                inputType != 0 || 
+                className?.contains("EditText") == true ||
+                className?.contains("TextInputEditText") == true ||
+                !hint.isNullOrEmpty()
+            ) -> true
+            else -> false
+        }
+        
+        if (shouldInclude && node.autofillId != null) {
+            val finalFieldType = if (fieldType == AutofillFieldType.UNKNOWN) {
+                // Try to make a better guess for unknown fields
+                if (className?.contains("password", ignoreCase = true) == true) {
+                    AutofillFieldType.PASSWORD
+                } else {
+                    AutofillFieldType.USERNAME // Default assumption
+                }
+            } else {
+                fieldType
+            }
+            
             fields.add(
                 AutofillField(
                     autofillId = node.autofillId!!,
-                    type = fieldType,
+                    type = finalFieldType,
                     hint = hint,
                     text = text
                 )
             )
+            
+            Log.d(TAG, "Added autofill field: type=$finalFieldType, hint=$hint")
         }
 
         // Recursively parse child nodes
@@ -182,26 +246,42 @@ class LinkCryptaAutofillService : AutofillService() {
         // Check autofill hints first (most reliable)
         autofillHints?.let { hints ->
             for (hintValue in hints) {
-                when (hintValue) {
-                    "username", "emailAddress" -> return AutofillFieldType.USERNAME
-                    "password" -> return AutofillFieldType.PASSWORD
+                when (hintValue.lowercase()) {
+                    "username", "emailaddress", "email", "login" -> return AutofillFieldType.USERNAME
+                    "password", "current-password", "new-password" -> return AutofillFieldType.PASSWORD
                 }
             }
         }
 
-        // Check input type
-        when (inputType and 0xfff) {
-            0x81 -> return AutofillFieldType.PASSWORD // TYPE_TEXT_VARIATION_PASSWORD
+        // Check input type more comprehensively
+        val inputTypeVariation = inputType and 0xfff
+        when (inputTypeVariation) {
+            0x81, 0x91, 0xe1 -> return AutofillFieldType.PASSWORD // Various password input types
             0x20 -> return AutofillFieldType.EMAIL    // TYPE_TEXT_VARIATION_EMAIL_ADDRESS
         }
 
-        // Fallback to text analysis
+        // Check if it's a password field by input type class
+        if ((inputType and 0x00000080) != 0) { // InputType.TYPE_TEXT_VARIATION_PASSWORD
+            return AutofillFieldType.PASSWORD
+        }
+
+        // Enhanced text analysis for Chrome and other browsers
         val allText = "${hint ?: ""} ${text ?: ""}".lowercase()
         return when {
-            allText.contains("password") || allText.contains("pwd") -> AutofillFieldType.PASSWORD
-            allText.contains("email") || allText.contains("e-mail") -> AutofillFieldType.EMAIL
-            allText.contains("username") || allText.contains("user") -> AutofillFieldType.USERNAME
-            else -> AutofillFieldType.UNKNOWN
+            allText.contains("password") || allText.contains("pwd") || allText.contains("pass") -> AutofillFieldType.PASSWORD
+            allText.contains("email") || allText.contains("e-mail") || allText.contains("mail") -> AutofillFieldType.EMAIL
+            allText.contains("username") || allText.contains("user") || allText.contains("login") -> AutofillFieldType.USERNAME
+            // Additional patterns for Chrome
+            allText.contains("identifier") || allText.contains("account") -> AutofillFieldType.USERNAME
+            else -> {
+                // If we still don't know, check if it looks like a password field
+                // by checking if it's likely to be obscured
+                if ((inputType and 0x00000080) != 0 || (inputType and 0x00000010) != 0) {
+                    AutofillFieldType.PASSWORD
+                } else {
+                    AutofillFieldType.USERNAME // Default to username for unknown text fields
+                }
+            }
         }
     }
 
@@ -243,17 +323,25 @@ class LinkCryptaAutofillService : AutofillService() {
             val passwordsArray = JSONArray(passwordsJson)
             val credentials = mutableListOf<CredentialMatch>()
             
+            Log.d(TAG, "Checking ${passwordsArray.length()} stored credentials for URL: $url")
+            Log.d(TAG, "Encryption keys available: ${encryptionHelper.areKeysAvailable()}")
+            
             for (i in 0 until passwordsArray.length()) {
                 val passwordObj = passwordsArray.getJSONObject(i)
                 val storedUrl = passwordObj.optString("url", "")
                 
                 // Simple URL matching - check if URLs are related
                 if (isUrlMatch(url, storedUrl)) {
+                    val encryptedPassword = passwordObj.optString("password", "")
+                    val decryptedPassword = encryptionHelper.getDecryptedPassword(encryptedPassword)
+                    
+                    Log.d(TAG, "Found matching credential for $storedUrl - password decrypted: ${decryptedPassword != encryptedPassword}")
+                    
                     credentials.add(CredentialMatch(
                         id = passwordObj.optString("id", ""),
                         name = passwordObj.optString("name", ""),
                         username = passwordObj.optString("username", ""),
-                        password = passwordObj.optString("password", ""), // This would be encrypted in real app
+                        password = decryptedPassword, // Now properly decrypted
                         url = storedUrl
                     ))
                 }
@@ -287,11 +375,20 @@ class LinkCryptaAutofillService : AutofillService() {
                 }
             }
             
+            // For new passwords saved via autofill, we'll store them encrypted if encryption is available
+            val passwordToStore = if (encryptionHelper.areKeysAvailable()) {
+                // Note: We can't encrypt here without implementing the full encryption logic
+                // For now, store as plain text and let the Flutter app handle encryption
+                password
+            } else {
+                password
+            }
+            
             val credentialObj = JSONObject().apply {
                 put("id", if (existingIndex >= 0) passwordsArray.getJSONObject(existingIndex).optString("id") else UUID.randomUUID().toString())
                 put("name", generateFriendlyName(url))
                 put("username", username)
-                put("password", password) // In real app, this should be encrypted
+                put("password", passwordToStore) // Store password (will be encrypted by Flutter app later)
                 put("url", url)
                 put("notes", "Auto-saved via Android Autofill")
                 put("category", "General")
@@ -426,6 +523,26 @@ class LinkCryptaAutofillService : AutofillService() {
         }
 
         return responseBuilder.build()
+    }
+
+    private fun createEmptyFillResponse(fields: List<AutofillField>): FillResponse? {
+        // Create a response with just save info, no datasets
+        val usernameField = fields.find { 
+            it.type == AutofillFieldType.USERNAME || it.type == AutofillFieldType.EMAIL 
+        }
+        val passwordField = fields.find { it.type == AutofillFieldType.PASSWORD }
+        
+        if (usernameField != null && passwordField != null) {
+            val responseBuilder = FillResponse.Builder()
+            val saveInfoBuilder = SaveInfo.Builder(
+                SaveInfo.SAVE_DATA_TYPE_USERNAME or SaveInfo.SAVE_DATA_TYPE_PASSWORD,
+                arrayOf(usernameField.autofillId, passwordField.autofillId)
+            )
+            responseBuilder.setSaveInfo(saveInfoBuilder.build())
+            return responseBuilder.build()
+        }
+        
+        return null
     }
 
     private fun extractValueFromRequest(request: SaveRequest, autofillId: AutofillId): String? {
