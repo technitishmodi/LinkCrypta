@@ -16,7 +16,6 @@ class _AdvancedPasswordGeneratorScreenState extends State<AdvancedPasswordGenera
   // Current options
   PasswordGenerationOptions _options = PasswordGenerationOptions();
   List<GeneratedPassword> _generatedPasswords = [];
-  final String _customPattern = '';
   
   // Controllers
   final _lengthController = TextEditingController(text: '16');

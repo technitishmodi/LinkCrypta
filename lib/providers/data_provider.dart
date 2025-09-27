@@ -10,6 +10,7 @@ import '../services/storage_service.dart';
 import '../services/sync_service.dart';
 import '../services/activity_log_service.dart';
 import '../services/encryption_service.dart';
+import '../services/autofill_framework_service.dart';
 
 class DataProvider extends ChangeNotifier {
   List<PasswordEntry> _passwords = [];
@@ -248,6 +249,10 @@ class DataProvider extends ChangeNotifier {
       _passwords = StorageService.getAllPasswords();
       _links = StorageService.getAllLinks();
       _invalidateAllCaches(); // Invalidate all caches when data reloads
+      
+      // Initialize autofill framework service with this data provider
+      await AutofillFrameworkService.instance.initialize(this);
+      
       notifyListeners();
     } catch (e) {
       _setError(e.toString());

@@ -359,9 +359,6 @@ class SyncService {
       final localPasswords = await getAllPasswords();
       final localLinks = await getAllLinks();
       
-      int passwordsAdded = 0;
-      int linksAdded = 0;
-      
       // Process Firebase passwords
       for (final doc in passwordsSnapshot.docs) {
         try {
@@ -379,7 +376,6 @@ class SyncService {
               notes: firebasePassword.notes,
               category: firebasePassword.category,
             );
-            passwordsAdded++;
           }
         } catch (e) {
         }
@@ -400,7 +396,6 @@ class SyncService {
               url: firebaseLink.url,
               category: firebaseLink.category,
             );
-            linksAdded++;
           }
         } catch (e) {
         }

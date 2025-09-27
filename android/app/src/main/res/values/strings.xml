@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LinkCrypta</string>
+    <string name="autofill_service_description">LinkCrypta Autofill Service - Securely autofill your passwords and usernames across Android apps and websites</string>
+</resources>

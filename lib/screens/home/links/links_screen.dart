@@ -64,43 +64,6 @@ class _LinksScreenState extends State<LinksScreen> {
     super.dispose();
   }
 
-  Future<void> _refreshData() async {
-    try {
-      final dataProvider = context.read<DataProvider>();
-      
-      // Check if user can sync with Firebase
-      if (dataProvider.canSyncWithFirebase()) {
-        // Sync all links to Firebase
-        final success = await dataProvider.syncAllToFirebase();
-        if (success) {
-          // Also sync from Firebase to get any cloud updates
-          await dataProvider.syncFromFirebase();
-        }
-      }
-      
-      // Load local data
-      await dataProvider.loadData();
-      
-      if (mounted) {
-        AppHelpers.showSnackBar(
-          context,
-          dataProvider.canSyncWithFirebase() 
-              ? 'Links synced with Firebase successfully'
-              : 'Links refreshed (local only - sign in to sync with cloud)',
-          backgroundColor: ModernColors.success,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        AppHelpers.showSnackBar(
-          context,
-          'Failed to sync: ${e.toString()}',
-          backgroundColor: ModernColors.error,
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

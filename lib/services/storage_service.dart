@@ -14,9 +14,7 @@ class StorageService {
   static late Box<LinkEntry> _linkBox;
 
   static Future<void> initialize() async {
-    // Hive.initFlutter() is already called in main.dart, so we don't need to call it again
-
-    // Register adapters only if not already registered
+   
     if (!Hive.isAdapterRegistered(PasswordEntryAdapter().typeId)) {
       Hive.registerAdapter(PasswordEntryAdapter());
     }

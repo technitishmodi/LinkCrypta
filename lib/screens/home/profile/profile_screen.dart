@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../../services/onboarding_service.dart';
 import '../../../services/firebase_auth_service.dart';
+import '../../../services/autofill_framework_service.dart';
 import '../../../utils/helpers.dart';
 import '../../../utils/responsive.dart';
 import '../../../providers/data_provider.dart';
@@ -536,6 +537,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 await OnboardingService.resetOnboarding();
                 if (context.mounted) {
                   Navigator.of(context).pushReplacementNamed('/onboarding');
+                }
+              }
+            },
+          ),
+
+          _buildSettingsItem(
+            context,
+            icon: Icons.download_rounded,
+            title: 'Import Autofill Credentials',
+            subtitle: 'Import saved credentials from autofill service',
+            onTap: () async {
+              final dataProvider = Provider.of<DataProvider>(context, listen: false);
+              try {
+                await AutofillFrameworkService.instance.forceImportNewCredentials(dataProvider);
+                if (context.mounted) {
+                  AppHelpers.showSnackBar(
+                    context,
+                    'Autofill credentials imported successfully!',
+                    backgroundColor: Colors.green,
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  AppHelpers.showSnackBar(
+                    context,
+                    'Error importing credentials: ${e.toString()}',
+                    backgroundColor: Colors.red,
+                  );
                 }
               }
             },

@@ -91,10 +91,6 @@ class SmartAutoFillService {
     'www', 'login', 'auth', 'signin', 'accounts', 'secure', 'my', 'app', 'api'
   ];
 
-  static const List<String> _commonTlds = [
-    '.com', '.org', '.net', '.edu', '.gov', '.co.uk', '.de', '.fr', '.jp', '.au'
-  ];
-
   /// Finds matching passwords for a given URL
   static List<UrlMatch> findMatchingPasswords(
     String currentUrl,

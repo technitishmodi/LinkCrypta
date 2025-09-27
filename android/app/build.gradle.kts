@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.linkcrypta.app"
-        minSdk = 23 // Minimum SDK version for app features
+        minSdk = 26 // Android 8.0+ required for Autofill Framework
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

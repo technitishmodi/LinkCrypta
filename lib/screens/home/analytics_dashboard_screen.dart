@@ -649,7 +649,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
     if (_analyticsSummary == null) return;
     
     try {
-      final exportData = AnalyticsService.exportAnalytics(_analyticsSummary!);
+      AnalyticsService.exportAnalytics(_analyticsSummary!);
       // In a real app, you would save this to a file or share it
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Analytics data exported successfully')),

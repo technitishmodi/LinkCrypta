@@ -7,6 +7,10 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
+    
+    <!-- Autofill Framework permissions -->
+    <uses-permission android:name="android.permission.BIND_AUTOFILL_SERVICE" />
+    <uses-permission android:name="android.permission.REQUEST_PASSWORD_COMPLEXITY" />
 
     <application
         android:label="LinkCrypta"
@@ -42,6 +46,19 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Autofill Service Declaration -->
+        <service
+            android:name=".LinkCryptaAutofillService"
+            android:exported="true"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.autofill.AutofillService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.autofill"
+                android:resource="@xml/autofill_service" />
+        </service>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

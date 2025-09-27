@@ -5,6 +5,7 @@ import 'password_health_dashboard_screen.dart';
 import 'advanced_password_generator_screen.dart';
 import 'analytics_dashboard_screen.dart';
 import 'smart_autofill_screen.dart';
+import 'autofill_framework_screen.dart';
 
 class AdvancedFeaturesScreen extends StatelessWidget {
   const AdvancedFeaturesScreen({super.key});
@@ -277,6 +278,29 @@ class AdvancedFeaturesScreen extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        // Third Row: Autofill Framework
+        Row(
+          children: [
+            Expanded(
+              child: _buildFeatureCard(
+                context,
+                'Autofill Framework',
+                'System-level autofill across all Android apps',
+                Icons.auto_mode,
+                const Color(0xFFE91E63),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AutofillFrameworkScreen(),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: Container()), // Empty space for symmetry
+          ],
+        ),
       ],
     );
   }
@@ -448,23 +472,5 @@ class AdvancedFeaturesScreen extends StatelessWidget {
       nameCount[name] = (nameCount[name] ?? 0) + 1;
     }
     return nameCount.values.where((count) => count > 1).length;
-  }
-
-  void _showComingSoonDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: const Text(
-          'Smart Auto-Fill feature is currently in development. This will provide intelligent form filling capabilities with URL matching and subdomain detection.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 }
