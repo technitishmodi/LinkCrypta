@@ -48,7 +48,9 @@ class AutofillFrameworkService {
         'id': entry.id,
         'name': entry.name,
         'username': entry.username,
-        'password': entry.password,
+        // IMPORTANT: send decrypted password to Android AutofillService
+        // so it can fill the actual password value.
+        'password': EncryptionService.decrypt(entry.password),
         'url': entry.url,
         'notes': entry.notes,
         'category': entry.category,
